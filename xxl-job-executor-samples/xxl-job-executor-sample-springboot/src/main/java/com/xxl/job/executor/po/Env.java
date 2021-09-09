@@ -7,9 +7,9 @@ import java.sql.Date;
 @Data
 public class Env {
     private Integer id;
-    private String evnName;
+    private String envName;
     private String remarks;
-    private String evnValue;
+    private String envValue;
     private Date createTime;
     private Integer sort;
     private Integer status;

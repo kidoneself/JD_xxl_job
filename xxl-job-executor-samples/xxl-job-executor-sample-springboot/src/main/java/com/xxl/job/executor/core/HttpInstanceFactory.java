@@ -2,6 +2,7 @@ package com.xxl.job.executor.core;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.xxl.job.core.log.XxlJobLogger;
 import com.xxl.job.executor.po.JDUser;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,6 @@ public class HttpInstanceFactory {
     private static HttpInstance httpInstance;
 
     @Data
-    @Slf4j
     public static class HttpInstance {
         // 请求url
         private String url;
@@ -54,14 +54,11 @@ public class HttpInstanceFactory {
             String userInfoUrl = "https://wq.jd.com/user_new/info/GetJDUserInfoUnion?sceneval=2";
             String response = doGet(userInfoUrl);
             if (!response.contains("retcode")) {
-                Log.append("用户Cookie填写错误，请填写正确的Cookie\n");
-                return null;
+                XxlJobLogger.log("用户Cookie填写错误，请填写正确的Cookie\n");
             }
-
             JSONObject result = JSONObject.parseObject(response);
             JSONObject o = result.getJSONObject("data").getJSONObject("userInfo").getJSONObject("baseInfo");
             return JSON.toJavaObject(o, JDUser.class);
-
         }
 
         public String doGet(String url) {
