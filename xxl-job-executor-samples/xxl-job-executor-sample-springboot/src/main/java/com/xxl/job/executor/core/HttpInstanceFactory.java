@@ -19,6 +19,9 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class HttpInstanceFactory {
@@ -30,19 +33,7 @@ public class HttpInstanceFactory {
         private String url;
         private StringBuffer Log = new StringBuffer();
         // 请求头
-        Header[] fixedHeaders = {
-                new BasicHeader("accept", "*/*"),
-                new BasicHeader("accept-encoding", "gzip, deflate, br"),
-                new BasicHeader("accept-language", "zh-CN,zh;q=0.9"),
-                new BasicHeader("cache-control", "no-cache"),
-                new BasicHeader("origin", "no-cache"),
-                new BasicHeader("cache-control", "https://home.m.jd.com"),
-                new BasicHeader("referer", "https://home.m.jd.com/myJd/newhome.action?sceneval=2&ufc=&"),
-                new BasicHeader("sec-fetch-dest", "empty"),
-                new BasicHeader("sec-fetch-mode", "cors"),
-                new BasicHeader("sec-fetch-site", "same-site"),
-                new BasicHeader("Content-Type", "application/x-www-form-urlencoded"),
-        };
+
         Header[] selfHeaders;
 
         /**
@@ -50,27 +41,45 @@ public class HttpInstanceFactory {
          *
          * @return
          */
-        public JDUser getUserInfo() throws UnsupportedEncodingException {
+        public JDUser getUserInfo(HashMap<String, String> map) {
             String userInfoUrl = "https://wq.jd.com/user_new/info/GetJDUserInfoUnion?sceneval=2";
-            String response = doGet(userInfoUrl);
+
+            HashMap<String, String> loginMap = new HashMap<>(map);
+            loginMap.put("accept", "*/*");
+            loginMap.put("accept-encoding", "gzip, deflate, br");
+            loginMap.put("accept-language", "zh-CN,zh;q=0.9");
+            loginMap.put("origin", "no-cache");
+            loginMap.put("cache-control", "https://home.m.jd.com");
+            loginMap.put("referer", "https://home.m.jd.com/myJd/newhome.action?sceneval=2&ufc=&");
+            loginMap.put("sec-fetch-dest", "empty");
+            loginMap.put("sec-fetch-mode", "cors");
+            loginMap.put("sec-fetch-site", "same-site");
+            loginMap.put("Content-Type", "application/x-www-form-urlencoded");
+            String response = doGet(userInfoUrl, loginMap);
             if (!response.contains("retcode")) {
-                XxlJobLogger.log("用户Cookie填写错误，请填写正确的Cookie\n");
+                XxlJobLogger.log("用户Cookie填写错误，请填写正确的Cookie");
             }
             JSONObject result = JSONObject.parseObject(response);
+            JSONObject data = result.getJSONObject("data");
+            if (data.size() == 0) {
+                XxlJobLogger.log("cookie失效，请获取最新的cookie");
+                return null;
+            }
             JSONObject o = result.getJSONObject("data").getJSONObject("userInfo").getJSONObject("baseInfo");
             return JSON.toJavaObject(o, JDUser.class);
         }
 
-        public String doGet(String url) {
+        /**
+         * get请求
+         */
+        public String doGet(String url, Map<String, String> headersMap) {
             //1.生成httpclient，相当于该打开一个浏览器
             CloseableHttpClient httpClient = HttpClients.createDefault();
             CloseableHttpResponse response = null;
             try {
                 //2.创建get请求，相当于在浏览器地址栏输入 网址
                 HttpGet request = new HttpGet(url);
-                Header[] headers = new Header[fixedHeaders.length + selfHeaders.length];
-                System.arraycopy(fixedHeaders, 0, headers, 0, fixedHeaders.length);
-                System.arraycopy(selfHeaders, 0, headers, fixedHeaders.length, selfHeaders.length);
+                Header[] headers = HeaderUtil.convertHeader(headersMap);
                 request.setHeaders(headers);
                 response = httpClient.execute(request);
                 HttpEntity httpEntity = response.getEntity();

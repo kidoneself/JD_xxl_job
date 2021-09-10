@@ -32,8 +32,9 @@
         t.create_time,
         t.sort,
         t.status
-        FROM evn AS t
+        FROM env AS t
         WHERE t.env_name = 'JD_COOKIE'
+        ORDER BY t.sort
     </select>
 
 </mapper>
