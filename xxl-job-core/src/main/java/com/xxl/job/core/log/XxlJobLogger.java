@@ -23,10 +23,6 @@ public class XxlJobLogger {
      */
     private static void logDetail(String appendLog) {
 
-
-        /*// "yyyy-MM-dd HH:mm:ss [ClassName]-[MethodName]-[LineNumber]-[ThreadName] log";
-        StackTraceElement[] stackTraceElements = new Throwable().getStackTrace();
-        StackTraceElement callInfo = stackTraceElements[1];*/
         String formatAppendLog = appendLog != null ? appendLog : "";
 
         // appendlog
@@ -48,13 +44,6 @@ public class XxlJobLogger {
 
         FormattingTuple ft = MessageFormatter.arrayFormat(appendLogPattern, appendLogArguments);
         String appendLog = ft.getMessage();
-
-        /*appendLog = appendLogPattern;
-        if (appendLogArguments!=null && appendLogArguments.length>0) {
-            appendLog = MessageFormat.format(appendLogPattern, appendLogArguments);
-        }*/
-
-//        StackTraceElement callInfo = new Throwable().getStackTrace()[1];
         logDetail(appendLog);
     }
 

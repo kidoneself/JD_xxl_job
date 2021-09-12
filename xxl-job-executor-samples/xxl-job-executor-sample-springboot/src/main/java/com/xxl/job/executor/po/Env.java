@@ -13,5 +13,7 @@ public class Env {
     private Date createTime;
     private Integer sort;
     private Integer status;
+    private String ua;
+    private String shareCode;
 
 }

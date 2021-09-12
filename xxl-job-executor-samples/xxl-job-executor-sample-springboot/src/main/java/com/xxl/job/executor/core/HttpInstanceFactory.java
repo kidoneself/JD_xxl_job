@@ -11,6 +11,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
@@ -18,6 +19,8 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -78,13 +81,23 @@ public class HttpInstanceFactory {
             CloseableHttpResponse response = null;
             try {
                 //2.创建get请求，相当于在浏览器地址栏输入 网址
+                URI uri = new URIBuilder()
+                        .setScheme("http")
+                        .setHost("www.google.com")
+                        .setPath("/search")
+                        .setParameter("q", "httpclient")
+                        .setParameter("btnG", "Google Search")
+                        .setParameter("aq", "f")
+                        .setParameter("oq", "")
+                        .build();
+
                 HttpGet request = new HttpGet(url);
                 Header[] headers = HeaderUtil.convertHeader(headersMap);
                 request.setHeaders(headers);
                 response = httpClient.execute(request);
                 HttpEntity httpEntity = response.getEntity();
                 return EntityUtils.toString(httpEntity, "utf-8");
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 e.printStackTrace();
             } finally {
                 //6.关闭

@@ -11,17 +11,8 @@
         <result column="create_time" property="createTime"/>
         <result column="sort" property="sort"/>
         <result column="status" property="status"/>
+        <result column="ua" property="ua"/>
     </resultMap>
-
-    <sql id="Base_Column_List">
-        t.id,
-        t.env_name,
-        t.remarks,
-        t.env_value,
-        t.create_time,
-        t.sort,
-        t.status
-    </sql>
 
     <select id="getAllCookie" resultMap="env">
         SELECT
@@ -31,7 +22,8 @@
         t.env_value,
         t.create_time,
         t.sort,
-        t.status
+        t.status,
+        t.ua
         FROM env AS t
         WHERE t.env_name = 'JD_COOKIE'
         ORDER BY t.sort
