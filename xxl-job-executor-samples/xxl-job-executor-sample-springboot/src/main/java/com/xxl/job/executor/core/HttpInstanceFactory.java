@@ -16,11 +16,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.security.PrivateKey;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +26,6 @@ public class HttpInstanceFactory {
 
     @Data
     public static class HttpInstance {
-
 
         // build api
         public JSONObject buildUrl(String functionId, String body, Map<String, String> headersMap) throws URISyntaxException {

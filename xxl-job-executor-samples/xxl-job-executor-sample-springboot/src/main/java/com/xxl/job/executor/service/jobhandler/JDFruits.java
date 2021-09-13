@@ -45,9 +45,9 @@ public class JDFruits extends IJobHandler {
         envs.forEach(env -> {
             XxlJobLogger.log("==========================================================");
             try {
-                // 3.获取当cookie
+                // 3.获取当前cookie
                 String cookie = env.getEnvValue();
-                
+
                 // 5. 校验当前cookie
                 JDUser userInfo = checkJdUserInfo(env, cookie);
                 if (userInfo == null) return;
@@ -55,43 +55,44 @@ public class JDFruits extends IJobHandler {
                 // 4.生成所需header
                 Map<String, String> fruitMap = getPublicHeader(env, cookie);
 
-                // 6.初始化农场
+                // 6.初始化农场->获取到用户农场信息
                 FarmUserPro farmUserPro = initForFarm(env, cookie);
+
+                // 初始化农场任务->获取所有农场任务列表
                 Task task = getTask(fruitMap);
 
-                if (!task.getAllTaskFinished()) {
-                    // 所有任务是否完成
-                    if (!task.getSignInit().getTodaySigned()) {
-                        signTask(env, fruitMap);
-                    } else {
-                        XxlJobLogger.log("已经完成签到任务");
-                    }
-                    if (!task.getFirstWaterInit().getFirstWaterFinished()) {
-                        // 首次浇水任务
-                        firstWaterTaskForFarm(userInfo, fruitMap);
-                    } else {
-                        XxlJobLogger.log("已经完成首次浇水任务");
-                    }
-                    if (!task.getGotThreeMealInit().getF()) {
-                        // 一天三次定时任务获取
-                        gotThreeMealForFarm(userInfo, fruitMap);
-                    } else {
-                        XxlJobLogger.log("当前不在定时领水时间");
-                    }
-                    if (!task.getTotalWaterTaskInit().getTotalWaterTaskFinished()) {
-                        // 领取浇水十次奖励
-                        totalWaterTaskForFarm(fruitMap);
-                    } else {
-                        XxlJobLogger.log("已经完成今日浇水十次任务");
-                    }
-                    if (!task.getGotBrowseTaskAdInit().getF()) {
-                        // 获取广告任务
-                        browseAdTaskForFarm(fruitMap, task.getGotBrowseTaskAdInit());
-                    } else {
-                        XxlJobLogger.log("已经完成今日全部广告任务");
-                    }
+                XxlJobLogger.log("开始完成农场任务");
+                // 签到任务
+                if (!task.getSignInit().getTodaySigned()) {
+                    signTask(env, fruitMap);
+                } else {
+                    XxlJobLogger.log("已经完成签到任务");
                 }
-                if (help(env, cookie, userInfo)) return;
+                // 一天三次定时任务获取
+                if (!task.getGotThreeMealInit().getF()) {
+                    gotThreeMealForFarm(userInfo, fruitMap);
+                } else {
+                    XxlJobLogger.log("当前不在定时领水时间");
+                }
+                if (!task.getTotalWaterTaskInit().getTotalWaterTaskFinished()) {
+                    // 领取浇水十次奖励
+                    totalWaterTaskForFarm(fruitMap);
+                } else {
+                    XxlJobLogger.log("已经完成今日浇水十次任务");
+                }
+                if (!task.getGotBrowseTaskAdInit().getF()) {
+                    // 获取广告任务
+                    browseAdTaskForFarm(fruitMap, task.getGotBrowseTaskAdInit());
+                } else {
+                    XxlJobLogger.log("已经完成今日全部广告任务");
+                }
+                // 首次浇水任务
+                if (!task.getFirstWaterInit().getFirstWaterFinished()) {
+                    firstWaterTaskForFarm(userInfo, fruitMap);
+                } else {
+                    XxlJobLogger.log("已经完成首次浇水任务");
+                }
+//                if (help(env, cookie, userInfo)) ;
                 doFriendsTask(fruitMap);
                 // 添加好友
                 // TODO 添加判断条件留下100滴水
@@ -109,7 +110,7 @@ public class JDFruits extends IJobHandler {
     private void doFriendsTask(Map<String, String> fruitMap) throws URISyntaxException {
         // 获取好友
         String initBody = new Body()
-                .Key("lastId").stringValue("null")
+                .Key("lastId").stringValue(null)
                 .Key("version").integerValue(14)
                 .Key("channel").integerValue(1)
                 .Key("babelChannel").stringValue("121").buildBody();
@@ -126,6 +127,9 @@ public class JDFruits extends IJobHandler {
         shareCodes.add("4d0a825a47234a8ea1f0073f42b5fb56");
         shareCodes.add("7ee0b96117b845a292994ded6826bf9d");
         // 删除所有好友
+        if (friends != null && friends.size() == 0) {
+            return;
+        }
         friends.forEach(friend -> {
             try {
                 String delBody = new Body()
@@ -195,7 +199,9 @@ public class JDFruits extends IJobHandler {
                 .Key("channel").integerValue(1)
                 .Key("babelChannel").stringValue("121").buildBody();
         JSONObject totalWaterTaskForFarm = httpIns.buildUrl("totalWaterTaskForFarm", body, fruitMap);
-
+        if (totalWaterTaskForFarm.getInteger("code") == 0) {
+            XxlJobLogger.log("【十次浇水奖励】获得{}g💧", totalWaterTaskForFarm.get("totalWaterTaskEnergy"));
+        }
     }
 
     private void additionalAfterWater(Map<String, String> fruitMap) throws URISyntaxException {

@@ -14,7 +14,7 @@ public class Body {
 
     public Body stringValue(String value) {
         if (value == null) {
-            body.append(":").append("\"").append("\"").append(",");
+            body.append(":").append(",");
         }
         body.append(":").append("\"").append(value).append("\"").append(",");
 
