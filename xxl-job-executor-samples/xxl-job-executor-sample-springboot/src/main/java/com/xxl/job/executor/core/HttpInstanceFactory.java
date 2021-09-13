@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.xxl.job.core.log.XxlJobLogger;
 import com.xxl.job.executor.po.JDUser;
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -14,15 +13,14 @@ import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.util.Arrays;
+import java.net.URL;
+import java.security.PrivateKey;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,12 +30,20 @@ public class HttpInstanceFactory {
 
     @Data
     public static class HttpInstance {
-        // 请求url
-        private String url;
-        private StringBuffer Log = new StringBuffer();
-        // 请求头
 
-        Header[] selfHeaders;
+
+        // build api
+        public JSONObject buildUrl(String functionId, String body, Map<String, String> headersMap) throws URISyntaxException {
+            String url = new URIBuilder()
+                    .setScheme(RequestConstant.SCHEME)
+                    .setHost(RequestConstant.HOST)
+                    .setParameter(RequestConstant.FUNCTIONID, functionId)
+                    .setParameter(RequestConstant.BODY, body)
+                    .setParameter(RequestConstant.APPID, RequestConstant.WH5)
+                    .build().toString();
+            String res = this.doGet(url, headersMap);
+            return JSONObject.parseObject(res);
+        }
 
         /**
          * 获取用户信息
@@ -46,7 +52,6 @@ public class HttpInstanceFactory {
          */
         public JDUser getUserInfo(HashMap<String, String> map) {
             String userInfoUrl = "https://wq.jd.com/user_new/info/GetJDUserInfoUnion?sceneval=2";
-
             HashMap<String, String> loginMap = new HashMap<>(map);
             loginMap.put("accept", "*/*");
             loginMap.put("accept-encoding", "gzip, deflate, br");
@@ -80,24 +85,13 @@ public class HttpInstanceFactory {
             CloseableHttpClient httpClient = HttpClients.createDefault();
             CloseableHttpResponse response = null;
             try {
-                //2.创建get请求，相当于在浏览器地址栏输入 网址
-                URI uri = new URIBuilder()
-                        .setScheme("http")
-                        .setHost("www.google.com")
-                        .setPath("/search")
-                        .setParameter("q", "httpclient")
-                        .setParameter("btnG", "Google Search")
-                        .setParameter("aq", "f")
-                        .setParameter("oq", "")
-                        .build();
-
                 HttpGet request = new HttpGet(url);
                 Header[] headers = HeaderUtil.convertHeader(headersMap);
                 request.setHeaders(headers);
                 response = httpClient.execute(request);
                 HttpEntity httpEntity = response.getEntity();
                 return EntityUtils.toString(httpEntity, "utf-8");
-            } catch (IOException | URISyntaxException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             } finally {
                 //6.关闭

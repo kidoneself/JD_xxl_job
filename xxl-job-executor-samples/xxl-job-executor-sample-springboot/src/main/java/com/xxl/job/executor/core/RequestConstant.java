@@ -7,4 +7,6 @@ public interface RequestConstant {
     String FUNCTIONID = "functionId";
     String BODY = "body";
     String APPID = "appid";
+    String WH5 = "wh5";
+
 }
