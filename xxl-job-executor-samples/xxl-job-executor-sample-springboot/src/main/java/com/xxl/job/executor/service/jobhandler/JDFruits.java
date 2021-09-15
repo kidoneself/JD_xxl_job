@@ -342,19 +342,39 @@ public class JDFruits extends IJobHandler {
                 .Key("channel").integerValue(1)
                 .Key("babelChannel").stringValue("121").buildBody();
         JSONObject clockInInitForFarm = httpIns.buildUrl("clockInInitForFarm", initBody, fruitMap);
-//        System.out.println("clockInInitForFarm=====" + clockInInitForFarm);
+
+        // 开始签到
         if (!clockInInitForFarm.getBoolean("todaySigned")) {
-            // 开始签到
             String signBody = new Body()
                     .Key("type").integerValue(1)
                     .Key("version").integerValue(14)
                     .Key("channel").integerValue(1)
                     .Key("babelChannel").stringValue("121").buildBody();
             JSONObject clockInForFarm = httpIns.buildUrl("clockInForFarm", signBody, fruitMap);
-            XxlJobLogger.log("【签到任务】获取到：" + clockInForFarm.get("amount") + "g💧");
-            // TODO 关注得水滴
+            XxlJobLogger.log("【签到任务】获取到：{}g💧", clockInForFarm.get("amount"));
+            Integer signDay = clockInForFarm.getInteger("signDay");
+            XxlJobLogger.log("【签到任务】已经签到：{}天，再连续签到{}天可以获取惊喜礼包！", signDay, 7 - signDay);
+            if (signDay == 7) {
+                //TODO 领取惊喜礼包
+                XxlJobLogger.log("【可以领取惊喜礼包");
+            }
         } else {
             XxlJobLogger.log("【签到任务】已完成");
+        }
+        // 关注得水滴
+        List<Theme> themes = clockInInitForFarm.getJSONArray("themes").toJavaList(Theme.class);
+        for (Theme theme : themes) {
+            if (!theme.getHadGot()) {
+                String flowBody = new Body()
+                        .Key("id").stringValue(theme.getId().toString())
+                        .Key("type").stringValue("theme")
+                        .Key("step").integerValue(2)
+                        .Key("version").integerValue(14)
+                        .Key("channel").integerValue(1)
+                        .Key("babelChannel").stringValue("121").buildBody();
+                JSONObject flowObj = httpIns.buildUrl("clockInFollowForFarm", flowBody, fruitMap);
+                XxlJobLogger.log("【关注领水】获得{}g💧", flowObj.get("amount"));
+            }
         }
     }
 
