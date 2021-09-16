@@ -82,6 +82,7 @@ public class JDFruits extends IJobHandler {
                 // 初始化农场任务->获取所有农场任务列表
                 task = getTask(fruitMap);
                 // 1-签到任务
+                flow(fruitMap);
                 if (!task.getSignInit().getTodaySigned()) {
                     signTask(env, fruitMap);
                 } else {
@@ -362,6 +363,17 @@ public class JDFruits extends IJobHandler {
             XxlJobLogger.log("【签到任务】已完成");
         }
         // 关注得水滴
+
+    }
+
+    private void flow(Map<String, String> fruitMap) throws URISyntaxException {
+        String initBody = new Body()
+                .Key("timestamp").integerValue(new Timestamp(System.currentTimeMillis()))
+                .Key("version").integerValue(14)
+                .Key("channel").integerValue(1)
+                .Key("babelChannel").stringValue("121").buildBody();
+        JSONObject clockInInitForFarm = httpIns.buildUrl("clockInInitForFarm", initBody, fruitMap);
+
         List<Theme> themes = clockInInitForFarm.getJSONArray("themes").toJavaList(Theme.class);
         for (Theme theme : themes) {
             if (!theme.getHadGot()) {
