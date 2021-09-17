@@ -11,7 +11,7 @@ xxl:
     executor:
       appname: jd-job
       ip:
-      port: 9998
+      port: 9991
       logpath: /data/applogs/xxl-job/jobhandler
       logretentiondays: -1
     accessToken:

@@ -3,16 +3,16 @@ package com.xxl.job.executor.core;
 
 import java.sql.Timestamp;
 
-public class Body {
+public class JDBodyParam {
 
     private final StringBuilder body = new StringBuilder();
 
-    public Body Key(String key) {
+    public JDBodyParam Key(String key) {
         body.append("\"").append(key).append("\"");
         return this;
     }
 
-    public Body stringValue(String value) {
+    public JDBodyParam stringValue(String value) {
         if (value == null) {
             body.append(":").append(",");
         }
@@ -21,7 +21,7 @@ public class Body {
         return this;
     }
 
-    public Body integerValue(Integer value) {
+    public JDBodyParam integerValue(Integer value) {
         if (value == null) {
             body.append(":").append("\"").append("\"").append(",");
         }
@@ -29,7 +29,7 @@ public class Body {
         return this;
     }
 
-    public Body integerValue(Timestamp value) {
+    public JDBodyParam integerValue(Timestamp value) {
         if (value == null) {
             body.append(":").append("\"").append("\"").append(",");
         }

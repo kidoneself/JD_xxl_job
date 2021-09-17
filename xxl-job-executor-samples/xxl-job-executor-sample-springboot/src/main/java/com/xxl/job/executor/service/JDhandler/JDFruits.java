@@ -1,13 +1,13 @@
-package com.xxl.job.executor.service.jobhandler;
+package com.xxl.job.executor.service.JDhandler;
 
 import com.alibaba.fastjson.JSONObject;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.JobHandler;
 import com.xxl.job.core.log.XxlJobLogger;
-import com.xxl.job.executor.core.Body;
+import com.xxl.job.executor.core.JDBodyParam;
 import com.xxl.job.executor.core.DataUtils;
-import com.xxl.job.executor.core.HttpInstanceFactory;
+import com.xxl.job.executor.core.JDHttpFactory;
 import com.xxl.job.executor.mapper.EnvMapper;
 import com.xxl.job.executor.po.Env;
 import com.xxl.job.executor.po.JDUser;
@@ -35,7 +35,7 @@ public class JDFruits extends IJobHandler {
 
     @Resource
     private EnvMapper envMapper;
-    HttpInstanceFactory.HttpInstance httpIns;
+    JDHttpFactory.HttpInstance httpIns;
     List<String> shareCodes;
     NumberFormat fmt = NumberFormat.getPercentInstance();
 
@@ -170,7 +170,7 @@ public class JDFruits extends IJobHandler {
     private void waterRainForFarm(Task task, Map<String, String> fruitMap) throws URISyntaxException {
         Integer winTimes = task.getWaterRainInit().getWinTimes();
         for (int i = 0; i < 2 - winTimes; i++) {
-            String body = new Body()
+            String body = new JDBodyParam()
                     .Key("type").integerValue(1)
                     .Key("hongBaoTimes").integerValue(100)
                     .Key("version").integerValue(3).buildBody();
@@ -218,7 +218,7 @@ public class JDFruits extends IJobHandler {
 
     private void getTwoHelp(Map<String, String> fruitMap) throws URISyntaxException {
         // 领取两次浇水任务
-        String twoBody = new Body()
+        String twoBody = new JDBodyParam()
                 .Key("version").integerValue(14)
                 .Key("channel").integerValue(1)
                 .Key("babelChannel").stringValue("121").buildBody();
@@ -231,7 +231,7 @@ public class JDFruits extends IJobHandler {
     private void addFriends(Env env) {
         shareCodes.forEach(shareCode -> {
             try {
-                String addBody = new Body()
+                String addBody = new JDBodyParam()
                         .Key("imageUrl").stringValue("")
                         .Key("nickName").stringValue("")
                         .Key("shareCode").stringValue(shareCode + "-inviteFriend")
@@ -255,7 +255,7 @@ public class JDFruits extends IJobHandler {
 
     private JSONObject initFriendFrom(Map<String, String> fruitMap, String shareCode) throws URISyntaxException {
         //初始话好友农场
-        String initFriendBody = new Body()
+        String initFriendBody = new JDBodyParam()
                 .Key("shareCode").stringValue(shareCode)
                 .Key("version").integerValue(14)
                 .Key("channel").integerValue(1)
@@ -274,7 +274,7 @@ public class JDFruits extends IJobHandler {
             XxlJobLogger.log("【好友数量】共获取到{}个好友", oldFriends.size());
             oldFriends.forEach(friend -> {
                 try {
-                    String delBody = new Body()
+                    String delBody = new JDBodyParam()
                             .Key("shareCode").stringValue(friend.getShareCode())
                             .Key("version").integerValue(14)
                             .Key("channel").integerValue(1)
@@ -298,7 +298,7 @@ public class JDFruits extends IJobHandler {
             Boolean canWaterFriend = initFriendFrom.getBoolean("canWaterFriend");
             if (canWaterFriend) {
                 try {
-                    String initBody = new Body()
+                    String initBody = new JDBodyParam()
                             .Key("shareCode").stringValue(shareCode)
                             .Key("version").integerValue(14)
                             .Key("channel").integerValue(1)
@@ -316,7 +316,7 @@ public class JDFruits extends IJobHandler {
 
     private InitFromFriends initFromFriends(Map<String, String> fruitMap) throws URISyntaxException {
         // 获取好友
-        String initBody = new Body()
+        String initBody = new JDBodyParam()
                 .Key("lastId").stringValue(null)
                 .Key("version").integerValue(14)
                 .Key("channel").integerValue(1)
@@ -327,7 +327,7 @@ public class JDFruits extends IJobHandler {
     }
 
     private JSONObject getTenTask(Map<String, String> fruitMap) throws URISyntaxException {
-        String initBody = new Body()
+        String initBody = new JDBodyParam()
                 .Key("version").integerValue(14)
                 .Key("channel").integerValue(1)
                 .Key("babelChannel").stringValue("121").buildBody();
@@ -337,7 +337,7 @@ public class JDFruits extends IJobHandler {
     private void signTask(Env env, Map<String, String> fruitMap) throws URISyntaxException {
         // 签到任务
         XxlJobLogger.log("开始初始化【" + env.getRemarks() + "】的签到任务");
-        String initBody = new Body()
+        String initBody = new JDBodyParam()
                 .Key("timestamp").integerValue(new Timestamp(System.currentTimeMillis()))
                 .Key("version").integerValue(14)
                 .Key("channel").integerValue(1)
@@ -346,7 +346,7 @@ public class JDFruits extends IJobHandler {
 
         // 开始签到
         if (!clockInInitForFarm.getBoolean("todaySigned")) {
-            String signBody = new Body()
+            String signBody = new JDBodyParam()
                     .Key("type").integerValue(1)
                     .Key("version").integerValue(14)
                     .Key("channel").integerValue(1)
@@ -367,7 +367,7 @@ public class JDFruits extends IJobHandler {
     }
 
     private void flow(Map<String, String> fruitMap) throws URISyntaxException {
-        String initBody = new Body()
+        String initBody = new JDBodyParam()
                 .Key("timestamp").integerValue(new Timestamp(System.currentTimeMillis()))
                 .Key("version").integerValue(14)
                 .Key("channel").integerValue(1)
@@ -377,7 +377,7 @@ public class JDFruits extends IJobHandler {
         List<Theme> themes = clockInInitForFarm.getJSONArray("themes").toJavaList(Theme.class);
         for (Theme theme : themes) {
             if (!theme.getHadGot()) {
-                String flowBody = new Body()
+                String flowBody = new JDBodyParam()
                         .Key("id").stringValue(theme.getId().toString())
                         .Key("type").stringValue("theme")
                         .Key("step").integerValue(2)
@@ -392,7 +392,7 @@ public class JDFruits extends IJobHandler {
 
     private void totalWaterTaskForFarm(Map<String, String> fruitMap) throws URISyntaxException {
         // 领取十次浇水任务奖励
-        String body = new Body()
+        String body = new JDBodyParam()
                 .Key("version").integerValue(14)
                 .Key("channel").integerValue(1)
                 .Key("babelChannel").stringValue("121").buildBody();
@@ -404,7 +404,7 @@ public class JDFruits extends IJobHandler {
 
     private void additionalAfterWater(Map<String, String> fruitMap) throws URISyntaxException {
         // 领取十次浇水后跳转小程序奖励
-        String body = new Body()
+        String body = new JDBodyParam()
                 .Key("type").integerValue(3)
                 .Key("version").integerValue(14)
                 .Key("channel").integerValue(1)
@@ -416,7 +416,7 @@ public class JDFruits extends IJobHandler {
     }
 
     private Task getTask(Map<String, String> fruitMap) throws URISyntaxException {
-        String body = new Body()
+        String body = new JDBodyParam()
                 .Key("version").integerValue(14)
                 .Key("channel").integerValue(1)
                 .Key("babelChannel").stringValue("121").buildBody();
@@ -471,7 +471,7 @@ public class JDFruits extends IJobHandler {
                 HashMap<String, String> helpMap = new HashMap<>();
                 helpMap.put("cookie", cookie);
                 helpMap.put("user-agent", env.getUa());
-                String body = new Body()
+                String body = new JDBodyParam()
                         .Key("imageUrl").stringValue("")
                         .Key("nickName").stringValue("")
                         .Key("shareCode").stringValue(shareCode)
@@ -518,7 +518,7 @@ public class JDFruits extends IJobHandler {
     // 初始化农场
     private InitFarm initForFarm(Env env, String cookie) throws URISyntaxException {
         Map<String, String> publicHeader = getPublicHeader(env, cookie);
-        String body = new Body()
+        String body = new JDBodyParam()
                 .Key("version").integerValue(14)
                 .Key("channel").integerValue(1)
                 .Key("babelChannel").stringValue("121").buildBody();
@@ -550,7 +550,7 @@ public class JDFruits extends IJobHandler {
 
     // 5个浏览任务api
     private JSONObject doTask(Map<String, String> taskMap, AdTask adTask, Integer type) throws URISyntaxException {
-        String body = new Body()
+        String body = new JDBodyParam()
                 .Key("advertId").stringValue(adTask.getAdvertId())
                 .Key("type").integerValue(type)
                 .Key("version").integerValue(14)
@@ -561,7 +561,7 @@ public class JDFruits extends IJobHandler {
 
     // 首次浇水任务
     private void firstWaterTaskForFarm(JDUser userInfo, Map<String, String> taskMap) throws URISyntaxException {
-        String body = new Body()
+        String body = new JDBodyParam()
                 .Key("version").integerValue(14)
                 .Key("channel").integerValue(1)
                 .Key("babelChannel").stringValue("121").buildBody();
@@ -575,7 +575,7 @@ public class JDFruits extends IJobHandler {
 
     // 浇水10次api
     private void waterGoodForFarm(Map<String, String> taskMap, int n) throws URISyntaxException {
-        String body = new Body()
+        String body = new JDBodyParam()
                 .Key("type").stringValue("")
                 .Key("version").integerValue(14)
                 .Key("channel").integerValue(1)
@@ -592,7 +592,7 @@ public class JDFruits extends IJobHandler {
 
     private void gotThreeMealForFarm(JDUser userInfo, Map<String, String> taskMap) throws URISyntaxException {
         XxlJobLogger.log("开始领取定时水滴");
-        String body = new Body()
+        String body = new JDBodyParam()
                 .Key("version").integerValue(14)
                 .Key("channel").integerValue(1)
                 .Key("babelChannel").stringValue("121").buildBody();
@@ -606,7 +606,7 @@ public class JDFruits extends IJobHandler {
 
     @Override
     public void init() {
-        this.httpIns = HttpInstanceFactory.getInstance();
+        this.httpIns = JDHttpFactory.getInstance();
     }
 
     @Override

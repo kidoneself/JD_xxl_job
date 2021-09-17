@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class HttpInstanceFactory {
+public class JDHttpFactory {
     private static HttpInstance httpInstance;
 
     @Data
