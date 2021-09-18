@@ -25,7 +25,7 @@
         t.status,
         t.ua
         FROM env AS t
-        WHERE t.env_name = 'JD_COOKIE'
+        WHERE t.env_name = #{envName}
         ORDER BY t.sort
     </select>
 

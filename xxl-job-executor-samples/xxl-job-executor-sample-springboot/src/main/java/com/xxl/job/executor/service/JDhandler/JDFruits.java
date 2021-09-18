@@ -1,12 +1,13 @@
 package com.xxl.job.executor.service.JDhandler;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.JobHandler;
 import com.xxl.job.core.log.XxlJobLogger;
-import com.xxl.job.executor.core.JDBodyParam;
 import com.xxl.job.executor.core.DataUtils;
+import com.xxl.job.executor.core.JDBodyParam;
 import com.xxl.job.executor.core.JDHttpFactory;
 import com.xxl.job.executor.mapper.EnvMapper;
 import com.xxl.job.executor.po.Env;
@@ -19,7 +20,6 @@ import javax.annotation.Resource;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,19 +44,8 @@ public class JDFruits extends IJobHandler {
     public ReturnT<String> execute(String param) {
 
         //初始化所有农场shareCode
-        List<String> shareCodes = new ArrayList<>();
-        shareCodes.add("81f8c0f0ea554b2385d4f866d4b2203f");
-        shareCodes.add("a2ff105430d2467cb08ba487af4758c1");
-        shareCodes.add("4d0a825a47234a8ea1f0073f42b5fb56");
-        shareCodes.add("29e99e9f60e4400daa2aa465ce82d8b7");
-        shareCodes.add("83e540d0b47445baa362ce87c9cc26c0");
-        shareCodes.add("7ee0b96117b845a292994ded6826bf9d");
-        shareCodes.add("185ac99da28949f6a91499b59786bbc0");
-        shareCodes.add("454dd649c9214b3db94d7d5ff1f61fa2");
-        shareCodes.add("b87f644a61cb4ed69b90b8a9701263c7");
+        this.shareCodes = getShareCode();
         XxlJobLogger.log("【助力码】您提供了{}个", shareCodes.size());
-        // todo 助力码不够->补充。
-        this.shareCodes = shareCodes;
         // 初始化所有ck
         List<Env> envs = getUsers();
         XxlJobLogger.log("==========================================================");
@@ -120,6 +109,10 @@ public class JDFruits extends IJobHandler {
                     XxlJobLogger.log("【红包雨获得】已完成");
                 }
 
+                // 小鸭子
+                getFullCollectionReward(fruitMap);
+
+
                 // 获取号好友列表
 //                InitFromFriends initFromFriends = initFromFriends(fruitMap);
 //                List<Friends> friends = initFromFriends.getFriends();
@@ -164,7 +157,58 @@ public class JDFruits extends IJobHandler {
             XxlJobLogger.log("=====================================================");
         });
 
+        // 农场助力奖励
+
+        XxlJobLogger.log("=====================================================");
+        XxlJobLogger.log("====================开始领取助力奖励====================");
+        XxlJobLogger.log("=====================================================");
+        envs.forEach(env -> {
+            String cookie = env.getEnvValue();
+            // 5. 校验当前cookie
+            JDUser userInfo = checkJdUserInfo(env, cookie);
+            if (userInfo == null) return;
+            // 4.生成所需header
+            Map<String, String> fruitMap = getPublicHeader(env, cookie);
+            try {
+                String body = new JDBodyParam()
+                        .Key("babelChannel").stringValue("121")
+                        .Key("channel").integerValue(1)
+                        .Key("version").integerValue(14).buildBody();
+                JSONObject masterHelpTaskInitForFarm = httpIns.buildUrl("masterHelpTaskInitForFarm", body, fruitMap);
+                JSONArray masterHelpPeoples = masterHelpTaskInitForFarm.getJSONArray("masterHelpPeoples");
+                if (!masterHelpTaskInitForFarm.getBoolean("f") && masterHelpPeoples != null && masterHelpPeoples.size() == 5) {
+                    String getBody = new JDBodyParam()
+                            .Key("babelChannel").stringValue("121")
+                            .Key("channel").integerValue(1)
+                            .Key("version").integerValue(14).buildBody();
+                    JSONObject masterGotFinishedTaskForFarm = httpIns.buildUrl("masterGotFinishedTaskForFarm", getBody, fruitMap);
+                    XxlJobLogger.log("【好友助力奖励】获得{}g💧", masterGotFinishedTaskForFarm.get("amount"));
+                } else if (!masterHelpTaskInitForFarm.getBoolean("f") && masterHelpPeoples != null) {
+                    XxlJobLogger.log("【好友助力】{}人,未达到5人", masterHelpPeoples.size());
+                } else if (masterHelpTaskInitForFarm.getBoolean("f")) {
+                    XxlJobLogger.log("【好友助力】已经领取");
+                }
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+
+        });
+
         return SUCCESS;
+    }
+
+    private void getFullCollectionReward(Map<String, String> fruitMap) throws URISyntaxException {
+        for (int i = 0; i < 6; i++) {
+            String body = new JDBodyParam()
+                    .Key("type").integerValue(2)
+                    .Key("babelChannel").stringValue("121")
+                    .Key("channel").integerValue(1)
+                    .Key("version").integerValue(14).buildBody();
+            JSONObject getFullCollectionReward = httpIns.buildUrl("getFullCollectionReward", body, fruitMap);
+            if (getFullCollectionReward.containsKey("addWater") && getFullCollectionReward.getInteger("code") == 0) {
+                XxlJobLogger.log("【{}】获得{}g💧", getFullCollectionReward.get("title"), getFullCollectionReward.get("addWater"));
+            }
+        }
     }
 
     private void waterRainForFarm(Task task, Map<String, String> fruitMap) throws URISyntaxException {
@@ -373,19 +417,24 @@ public class JDFruits extends IJobHandler {
                 .Key("channel").integerValue(1)
                 .Key("babelChannel").stringValue("121").buildBody();
         JSONObject clockInInitForFarm = httpIns.buildUrl("clockInInitForFarm", initBody, fruitMap);
-
         List<Theme> themes = clockInInitForFarm.getJSONArray("themes").toJavaList(Theme.class);
         for (Theme theme : themes) {
             if (!theme.getHadGot()) {
                 String flowBody = new JDBodyParam()
                         .Key("id").stringValue(theme.getId().toString())
                         .Key("type").stringValue("theme")
-                        .Key("step").integerValue(2)
-                        .Key("version").integerValue(14)
-                        .Key("channel").integerValue(1)
-                        .Key("babelChannel").stringValue("121").buildBody();
+                        .Key("step").integerValue(1).buildBody();
                 JSONObject flowObj = httpIns.buildUrl("clockInFollowForFarm", flowBody, fruitMap);
-                XxlJobLogger.log("【关注领水】获得{}g💧", flowObj.get("amount"));
+                if (flowObj.getInteger("code") == 0) {
+                    String getBody = new JDBodyParam()
+                            .Key("id").stringValue(theme.getId().toString())
+                            .Key("type").stringValue("theme")
+                            .Key("step").integerValue(2).buildBody();
+                    JSONObject getObj = httpIns.buildUrl("clockInFollowForFarm", getBody, fruitMap);
+                    XxlJobLogger.log("【关注领水】[{}]获得{}g💧", theme.getAdDesc(), getObj.get("amount"));
+                }
+            } else {
+                XxlJobLogger.log("【关注领水】[{}]已完成", theme.getAdDesc());
             }
         }
     }
@@ -459,9 +508,16 @@ public class JDFruits extends IJobHandler {
     }
 
     private List<Env> getUsers() {
-        List<Env> envs = envMapper.getAllCookie();
+        List<Env> envs = envMapper.getAllCookie("JD_COOKIE");
         XxlJobLogger.log("【初始化用户】共获取到{}个账号", envs.size());
         return envs;
+    }
+
+    private List<String> getShareCode() {
+        List<Env> envs = envMapper.getAllCookie("FRUITS_SHARE_CODE");
+        List<String> shareCodes = envs.stream().map(Env::getEnvValue).collect(Collectors.toList());
+        XxlJobLogger.log("【初始化用户】共获取到{}个账号", envs.size());
+        return shareCodes;
     }
 
     private void help(Env env, String cookie, JDUser userInfo) {
