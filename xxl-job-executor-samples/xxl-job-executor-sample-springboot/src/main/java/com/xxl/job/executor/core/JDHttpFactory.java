@@ -39,7 +39,18 @@ public class JDHttpFactory {
             String res = this.doGet(url, headersMap);
             return JSONObject.parseObject(res);
         }
-
+        // build api
+        public JSONObject buildBeanUrl(String functionId, String body, Map<String, String> headersMap) throws URISyntaxException {
+            String url = new URIBuilder()
+                    .setScheme(RequestConstant.SCHEME)
+                    .setHost(RequestConstant.HOST)
+                    .setParameter(RequestConstant.FUNCTIONID, functionId)
+                    .setParameter(RequestConstant.BODY, body)
+                    .setParameter(RequestConstant.APPID, RequestConstant.ld)
+                    .build().toString();
+            String res = this.doGet(url, headersMap);
+            return JSONObject.parseObject(res);
+        }
         /**
          * 获取用户信息
          *

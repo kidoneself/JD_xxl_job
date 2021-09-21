@@ -1,5 +1,6 @@
 package com.xxl.job.executor.service.JDhandler;
 
+import com.alibaba.fastjson.JSONObject;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.JobHandler;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.net.URISyntaxException;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -26,40 +28,49 @@ public class JDBeans extends IJobHandler {
     JDHttpFactory.HttpInstance httpIns;
     List<String> paradiseUuids;
     NumberFormat fmt = NumberFormat.getPercentInstance();
+//    @Resource
+//    private ShakeRedEnvelopes shakeRedEnvelopes;
 
 
     @Override
     public ReturnT<String> execute(String param) throws Exception {
-
-
-
         this.paradiseUuids = getParadiseUuids();
         XxlJobLogger.log("【助力码】您提供了{}个", paradiseUuids.size());
         // 初始化所有ck
         List<Env> envs = getUsers();
+
         XxlJobLogger.log("==========================================================");
         envs.forEach(env -> {
-
-
-
-
-
-
-
-
-
-
+            JDUser userInfo = checkJdUserInfo(env);
+            if (userInfo == null) return;
+            // ==========================================================签到领取京豆==========================================================
+            try {
+                String body = "signBeanIndex&appid=ld";
+                HashMap<String, String> beanMap = new HashMap<>();
+                beanMap.put("cookie", env.getEnvValue());
+                JSONObject signBeanIndex = httpIns.buildBeanUrl("signBeanIndex", body, beanMap);
+                if (signBeanIndex.getInteger("code") == 0 && signBeanIndex.getJSONObject("data").getInteger("status") == 1) {
+                    XxlJobLogger.log("【领京豆签到】[{}]获得{}个京豆", env.getRemarks(), signBeanIndex.getJSONObject("data").getJSONObject("dailyAward").getJSONObject("beanAward").getString("beanCount"));
+                } else if (signBeanIndex.getInteger("code") == 0 && signBeanIndex.getJSONObject("data").getInteger("status") == 2) {
+                    XxlJobLogger.log("【领京豆签到】[{}]已签过 ⚠", env.getRemarks());
+                } else if (signBeanIndex.getInteger("code") != 0) {
+                    XxlJobLogger.log("【领京豆签到】[{}]已签过 2⚠", env.getRemarks());
+                }
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+            // ==========================================================摇红包==========================================================
+//            shakeRedEnvelopes.getVVipClubLotteryTask(env.getEnvValue(), env.getUa());
         });
         return SUCCESS;
     }
-
-
 
 
     private List<String> getParadiseUuids() {
         List<Env> envs = envMapper.getAllCookie("FRUITS_SHARE_CODE");
         return envs.stream().map(Env::getEnvValue).collect(Collectors.toList());
     }
+
     private List<Env> getUsers() {
         List<Env> envs = envMapper.getAllCookie("JD_COOKIE");
         XxlJobLogger.log("【初始化用户】共获取到{}个账号", envs.size());
@@ -67,12 +78,12 @@ public class JDBeans extends IJobHandler {
     }
 
     // 校验用户
-    private JDUser checkJdUserInfo(Env env, String cookie) {
+    private JDUser checkJdUserInfo(Env env) {
         JDUser userInfo;
         /*================= 获取用户信息 ================= */
         HashMap<String, String> loginMap = new HashMap<>();
         // 设置获取用户信息header
-        loginMap.put("cookie", cookie);
+        loginMap.put("cookie", env.getEnvValue());
         loginMap.put("User-Agent", env.getUa());
         XxlJobLogger.log("【用户信息】{}", env.getRemarks());
         userInfo = httpIns.getUserInfo(loginMap);
@@ -82,6 +93,7 @@ public class JDBeans extends IJobHandler {
         }
         return userInfo;
     }
+
     @Override
     public void init() {
         this.httpIns = JDHttpFactory.getInstance();

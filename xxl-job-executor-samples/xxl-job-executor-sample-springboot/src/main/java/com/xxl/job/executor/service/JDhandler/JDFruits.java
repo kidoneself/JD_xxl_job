@@ -623,9 +623,9 @@ public class JDFruits extends IJobHandler {
                 .Key("babelChannel").stringValue("121").buildBody();
         JSONObject firstWaterTaskForFarm = httpIns.buildUrl("firstWaterTaskForFarm", body, taskMap);
         if (firstWaterTaskForFarm.getInteger("code") != 0) {
-            XxlJobLogger.log(userInfo.getNickname() + "【首次浇水】任务已完成");
+            XxlJobLogger.log("【首次浇水】任务已完成");
         } else {
-            XxlJobLogger.log(userInfo.getNickname() + "【首次浇水】获取到：{}g💧", firstWaterTaskForFarm.get("amount"));
+            XxlJobLogger.log("【首次浇水】获取到：{}g💧", firstWaterTaskForFarm.get("amount"));
         }
     }
 

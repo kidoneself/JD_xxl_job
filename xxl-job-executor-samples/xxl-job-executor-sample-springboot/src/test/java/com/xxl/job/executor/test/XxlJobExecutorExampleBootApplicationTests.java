@@ -1,62 +1,95 @@
 package com.xxl.job.executor.test;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.xxl.job.executor.po.JxFactory;
+import com.xxl.job.executor.core.HeaderUtil;
+import com.xxl.job.executor.core.JDBodyParam;
+import com.xxl.job.executor.core.RequestConstant;
+import com.xxl.job.executor.po.ShakeList;
+import com.xxl.job.executor.po.TaskItemsItem;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestTemplate;
 
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
+import java.util.Map;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class XxlJobExecutorExampleBootApplicationTests {
 
     @Test
-    public void test() throws UnirestException {
-        Date date = new Date();
-        String formatStr = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:sssss'.Z'").format(date);
-        System.err.println(formatStr);
+    public void test() throws UnirestException, URISyntaxException {
+        RestTemplate restTemplate = new RestTemplate();
+//
+        HashMap<String, String> headerMap = new HashMap<>();
+        headerMap.put("Host", "api.m.jd.com");
+        headerMap.put("Connection", "keep-alive");
+        headerMap.put("Pragma", "no-cache");
+        headerMap.put("Cache-Control", "no-cache");
+        headerMap.put("Sec-Fetch-Site", "same-site");
+        headerMap.put("Origin", "https://spa.jd.com");
+        headerMap.put("Sec-Fetch-Mode", "cors");
+        headerMap.put("Sec-Fetch-Dest", "empty");
+        headerMap.put("Accept", "application/json");
+        headerMap.put("Referer", "https://spa.jd.com/");
+        headerMap.put("Accept-Encoding", "gzip, deflate, br");
+        headerMap.put("Accept-Language", "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7");
+        headerMap.put("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1");
+        headerMap.put("cookie", "pt_key=AAJhRyK1ADCfaMLMkUA96laOm1_845DZqAuxdaP7mSbEeNfmuQoM2kItc-La3dm18Mb9e37nJ1w;pt_pin=wdlLxrYZBojiba;");
 
-        Unirest.setTimeouts(0, 0);
-        HttpResponse<String> response = Unirest.get("https://wq.jd.com/user/info/QueryJDUserInfo?sceneval=2")
-                .header("user-agent", "jdpingou;android;5.5.0;10;193f8fbac9948c74;network/UNKNOWN;model/JEF-AN00;appBuild/18299;partner/huawei01;;session/73;aid/193f8fbac9948c74;oaid/1cad52a0-a01e-4a4b-96ac-4a734a49e3e6;pap/JA2019_3111789;brand/HUAWEI;eu/1393336683662616;fv/3693934383367343;Mozilla/5.0 (Linux; Android 10; JEF-AN00 Build/HUAWEIJEF-AN00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/83.0.4103.106 Mobile Safari/537.36")
-                .header("Accept","application/json,text/plain, */*" )
-                .header("Content-Type","application/x-www-form-urlencoded" )
-                .header("Accept-Encoding","gzip, deflate, br" )
-                .header("Accept-Language","zh-cn" )
-                .header("Connection","keep-alive" )
-                .header("Cookie","pt_key=AAJhQEfuADCnjcl3yHkyhCTSylvkHv4JlA62JrG3uOLxHgcIj6OCUgtfuH7dgZHPuDwuso3blO0;pt_pin=jd_6784f6c82972a;" )
-                .header("Referer","https://wqs.jd.com/my/jingdou/my.shtml?sceneval=2" )
-                .asString();
+        //1.生成httpclient，相当于该打开一个浏览器
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        CloseableHttpResponse response = null;
+        try {
+            URI uri = new URI("https://api.m.jd.com/?t=1632064755196&appid=vip_h5&functionId=vvipclub_lotteryTask&body=%7B%22info%22:%22browseTask%22,%22withItem%22:true%7D");
+            HttpGet request = new HttpGet(uri);
+            Header[] headers = HeaderUtil.convertHeader(headerMap);
+            request.setHeaders(headers);
+            response = httpClient.execute(request);
+            HttpEntity httpEntity = response.getEntity();
+            String shakeListRes = EntityUtils.toString(httpEntity, "utf-8");
+            JSONObject shakeListObj = JSONObject.parseObject(shakeListRes);
+            ShakeList shakeList1 = JSONObject.toJavaObject(shakeListObj, ShakeList.class);
+            List<TaskItemsItem> sharkLists = shakeList1.getData().get(0).getTaskItems();
 
-        InputStream rawBody = response.getRawBody();
-        String body = response.getBody();
-        JSONObject parse1 = JSONObject.parseObject(body);
-        int i = body.indexOf("window._CONFIG = ");
-        int i2 = body.indexOf(" ;var __getImgUrl");
-        String substring = body.substring(i + "window._CONFIG = ".length(), i2);
-        JSONArray parse = JSONArray.parseArray(substring);
-
-        JSONArray skinConfig = parse.getJSONObject(0).getJSONArray("skinConfig");
-        List<JxFactory> jxFactories = skinConfig.toJavaList(JxFactory.class);
-        jxFactories.forEach(jxFactory -> {
-            if (jxFactory.getLink() != null/* && jxFactory.getStart() != null && jxFactory.getEnd() != null*/) {
-                System.out.println(jxFactory.getActiveId());
-                System.out.println(jxFactory.getLink());
-                System.out.println(jxFactory.getEnd());
-            }
-        });
-
+            sharkLists.forEach(sharkList -> {
+                if (!sharkList.isFinish()) {
+                    try {
+                        String body = new JDBodyParam()
+                                .Key("taskName").stringValue("browseTask")
+                                .Key("taskItemId").integerValue(sharkList.getId()).
+                                buildBody();
+                        JSONObject masterHelpTaskInitForFarm = buildUrl("vvipclub_doTask", body, headerMap);
+                        System.out.println(masterHelpTaskInitForFarm);
+                    } catch (URISyntaxException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            //6.关闭
+            HttpClientUtils.closeQuietly(response);
+            HttpClientUtils.closeQuietly(httpClient);
+        }
 
     }
 
@@ -73,5 +106,47 @@ public class XxlJobExecutorExampleBootApplicationTests {
                 return numb;
             }
         }
+    }
+
+
+    public String doGet(String url, Map<String, String> headersMap) {
+        //1.生成httpclient，相当于该打开一个浏览器
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        CloseableHttpResponse response = null;
+        try {
+            HttpGet request = new HttpGet(url);
+            Header[] headers = HeaderUtil.convertHeader(headersMap);
+            request.setHeaders(headers);
+            response = httpClient.execute(request);
+            HttpEntity httpEntity = response.getEntity();
+            return EntityUtils.toString(httpEntity, "utf-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            //6.关闭
+            HttpClientUtils.closeQuietly(response);
+            HttpClientUtils.closeQuietly(httpClient);
+        }
+        return null;
+    }
+
+    @Test
+    public JSONObject buildUrl(String functionId, String body, Map<String, String> headersMap) throws URISyntaxException {
+        String url = new URIBuilder()
+                .setScheme(RequestConstant.SCHEME)
+                .setHost(RequestConstant.HOST)
+                .setParameter(RequestConstant.FUNCTIONID, functionId)
+                .setParameter(RequestConstant.BODY, body)
+                .setParameter(RequestConstant.APPID, "vip_h5")
+                .setParameter("t", new Timestamp(System.currentTimeMillis()).toString())
+                .build().toString();
+        String res = this.doGet(url, headersMap);
+        return JSONObject.parseObject(res);
+    }
+
+
+    @Test
+    public void aaa() {
+        System.out.println(new Timestamp(System.currentTimeMillis()));
     }
 }
