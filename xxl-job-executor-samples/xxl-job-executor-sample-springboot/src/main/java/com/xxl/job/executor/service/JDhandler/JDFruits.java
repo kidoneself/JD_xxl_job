@@ -49,6 +49,9 @@ public class JDFruits extends IJobHandler {
         // 初始化所有ck
         List<Env> envs = getUsers();
         XxlJobLogger.log("==========================================================");
+        // 先开始助力
+
+
         // 2.开始执行任务
         envs.forEach(env -> {
             Task task;
@@ -66,7 +69,7 @@ public class JDFruits extends IJobHandler {
                 initFarm = initForFarm(env, cookie);
                 FarmUserPro farmUserPro = initFarm.getFarmUserPro();
                 XxlJobLogger.log("【水果名称】{}", farmUserPro.getName());
-                XxlJobLogger.log("【{}】好友互助码:{}", farmUserPro.getNickName(), farmUserPro.getShareCode());
+                XxlJobLogger.log("【好友互助码】:{}", farmUserPro.getShareCode());
                 XxlJobLogger.log("【已成功兑换水果】{}次", farmUserPro.getWinTimes());
                 // 初始化农场任务->获取所有农场任务列表
                 task = getTask(fruitMap);
@@ -97,11 +100,11 @@ public class JDFruits extends IJobHandler {
                     XxlJobLogger.log("【十次浇水任务】已完成");
                 }
                 // 4-首次浇水任务
-                if (!task.getFirstWaterInit().getFirstWaterFinished()) {
-                    firstWaterTaskForFarm(userInfo, fruitMap);
-                } else {
-                    XxlJobLogger.log("【首次浇水任务】已完成");
-                }
+//                if (!task.getFirstWaterInit().getFirstWaterFinished()) {
+//                    firstWaterTaskForFarm(userInfo, fruitMap);
+//                } else {
+//                    XxlJobLogger.log("【首次浇水任务】已完成");
+//                }
                 // 6-红包雨任务
                 if (!task.getWaterRainInit().getF()) {
                     waterRainForFarm(task, fruitMap);
@@ -111,8 +114,6 @@ public class JDFruits extends IJobHandler {
 
                 // 小鸭子
                 getFullCollectionReward(fruitMap);
-
-
                 // 获取号好友列表
 //                InitFromFriends initFromFriends = initFromFriends(fruitMap);
 //                List<Friends> friends = initFromFriends.getFriends();
@@ -138,6 +139,7 @@ public class JDFruits extends IJobHandler {
                     waterGoodForFarm(fruitMap, 10 - waterDay);
                 }
                 // 领取10次浇水奖励
+                firstWaterTaskForFarm(userInfo, fruitMap);
                 JSONObject tenTask = getTenTask(fruitMap);
                 JSONObject todayGotWaterGoalTask = tenTask.getJSONObject("todayGotWaterGoalTask");
                 Boolean canPop = todayGotWaterGoalTask.getBoolean("canPop");
@@ -230,7 +232,7 @@ public class JDFruits extends IJobHandler {
         InitFarm initFarm;
         initFarm = initForFarm(env, cookie);
         Integer totalEnergy = initFarm.getFarmUserPro().getTotalEnergy();
-        if (totalEnergy > 110) {
+        if (totalEnergy >= 110) {
             int n = (totalEnergy - 100) / 10;
             XxlJobLogger.log("【剩余水滴】{}g\uD83D\uDCA7继续浇水{}次", totalEnergy, n);
             waterGoodForFarm(fruitMap, n);
