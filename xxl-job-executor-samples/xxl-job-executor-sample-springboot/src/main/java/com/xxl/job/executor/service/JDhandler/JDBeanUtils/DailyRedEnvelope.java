@@ -7,6 +7,7 @@ import com.xxl.job.core.handler.annotation.JobHandler;
 import com.xxl.job.core.log.XxlJobLogger;
 import com.xxl.job.executor.core.GetMethodIns;
 import com.xxl.job.executor.core.JDBodyParam;
+import com.xxl.job.executor.core.UserAgentUtil;
 import com.xxl.job.executor.mapper.EnvMapper;
 import com.xxl.job.executor.po.Env;
 import com.xxl.job.executor.po.dailyRed.DailyRed;
@@ -36,8 +37,7 @@ public class DailyRedEnvelope extends IJobHandler {
         List<Env> envs = getUsers();
         XxlJobLogger.log("==========================================================");
         envs.forEach(env -> {
-            DoDailyRedEnvelopeTask(env.getEnvValue(), env.getUa());
-
+            DoDailyRedEnvelopeTask(env.getEnvValue());
         });
         return SUCCESS;
     }
@@ -58,8 +58,8 @@ public class DailyRedEnvelope extends IJobHandler {
         return envs;
     }
 
-    public void DoDailyRedEnvelopeTask(String cookie, String UA) {
-        HashMap<String, String> headerMap = getTaskMap(cookie, "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1");
+    public void DoDailyRedEnvelopeTask(String cookie) {
+        HashMap<String, String> headerMap = getTaskMap(cookie);
         XxlJobLogger.log("======开始执行天天红包任务=======");
         // 初始化
         DailyRed dailyRed = getDailyRedInit(headerMap);
@@ -82,7 +82,6 @@ public class DailyRedEnvelope extends IJobHandler {
         turntableBrowserAds.forEach(turntableBrowserAdsItem -> {
             if (!turntableBrowserAdsItem.isGotStatus()) {
                 //浏览任务
-                //https://api.m.jd.com/client.action?functionId=browserForTurntableFarm&body={"type":1,"adId":"3001558527","version":4,"channel":1}&appid=wh5
                 String browserForTurntableFarmBody = new JDBodyParam()
                         .Key("type").value(1)
                         .Key("adId").valueMark(turntableBrowserAdsItem.getAdId())
@@ -167,12 +166,11 @@ public class DailyRedEnvelope extends IJobHandler {
             XxlJobLogger.log("活动太火爆了！请稍后重试");
             return null;
         }
-        DailyRed dailyRed = initForTurntableFarm.toJavaObject(DailyRed.class);
-        return dailyRed;
+        return initForTurntableFarm.toJavaObject(DailyRed.class);
     }
 
 
-    private HashMap<String, String> getTaskMap(String cookie, String UA) {
+    private HashMap<String, String> getTaskMap(String cookie) {
         HashMap<String, String> headerMap = new HashMap<>();
         headerMap.put("Host", "api.m.jd.com");
         headerMap.put("Connection", "keep-alive");
@@ -186,7 +184,7 @@ public class DailyRedEnvelope extends IJobHandler {
         headerMap.put("Referer", "https://h5.m.jd.com/");
         headerMap.put("Accept-Encoding", "gzip, deflate, br");
         headerMap.put("Accept-Language", "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7");
-        headerMap.put("User-Agent", UA);
+        headerMap.put("User-Agent", UserAgentUtil.randomUserAgent());
         headerMap.put("Cookie", cookie);
         return headerMap;
     }

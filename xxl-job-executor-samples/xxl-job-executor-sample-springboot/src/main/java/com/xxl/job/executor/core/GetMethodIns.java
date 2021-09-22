@@ -59,6 +59,24 @@ public class GetMethodIns {
         return url;
     }
 
+    public String buildUrl(String functionId, String body, String appid, String... args) {
+        String url = null;
+
+        try {
+            url = new URIBuilder()
+                    .setScheme(RequestConstant.SCHEME)
+                    .setHost(RequestConstant.HOST)
+                    .setParameter(RequestConstant.FUNCTIONID, functionId)
+                    .setParameter(RequestConstant.BODY, body)
+                    .setParameter(RequestConstant.APPID, appid)
+                    .build().toString();
+        } catch (URISyntaxException e) {
+            XxlJobLogger.log("系统错误，稍后重试~~~~");
+        }
+        return url;
+    }
+
+
     public static GetMethodIns getGetIns() {
         if (getIns == null) {
             synchronized (GetMethodIns.class) {

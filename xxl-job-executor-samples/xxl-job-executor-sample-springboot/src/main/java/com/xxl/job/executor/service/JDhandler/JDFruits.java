@@ -9,6 +9,7 @@ import com.xxl.job.core.log.XxlJobLogger;
 import com.xxl.job.executor.core.DataUtils;
 import com.xxl.job.executor.core.JDBodyParam;
 import com.xxl.job.executor.core.JDHttpFactory;
+import com.xxl.job.executor.core.UserAgentUtil;
 import com.xxl.job.executor.mapper.EnvMapper;
 import com.xxl.job.executor.po.Env;
 import com.xxl.job.executor.po.JDUser;
@@ -58,12 +59,12 @@ public class JDFruits extends IJobHandler {
                 // 3.获取当前cookie
                 String cookie = env.getEnvValue();
                 // 5. 校验当前cookie
-                JDUser userInfo = checkJdUserInfo(env, cookie);
+                JDUser userInfo = checkJdUserInfo(env);
                 if (userInfo == null) return;
                 // 4.生成所需header
-                Map<String, String> fruitMap = getPublicHeader(env, cookie);
+                Map<String, String> fruitMap = getPublicHeader(cookie);
                 XxlJobLogger.log("【初始化】{}的农场", env.getRemarks());
-                initFarm = initForFarm(env, cookie);
+                initFarm = initForFarm(cookie);
                 FarmUserPro farmUserPro = initFarm.getFarmUserPro();
                 XxlJobLogger.log("【水果名称】{}", farmUserPro.getName());
                 XxlJobLogger.log("【{}】好友互助码:{}", farmUserPro.getNickName(), farmUserPro.getShareCode());
@@ -111,8 +112,6 @@ public class JDFruits extends IJobHandler {
 
                 // 小鸭子
                 getFullCollectionReward(fruitMap);
-
-
                 // 获取号好友列表
 //                InitFromFriends initFromFriends = initFromFriends(fruitMap);
 //                List<Friends> friends = initFromFriends.getFriends();
@@ -165,10 +164,10 @@ public class JDFruits extends IJobHandler {
         envs.forEach(env -> {
             String cookie = env.getEnvValue();
             // 5. 校验当前cookie
-            JDUser userInfo = checkJdUserInfo(env, cookie);
+            JDUser userInfo = checkJdUserInfo(env);
             if (userInfo == null) return;
             // 4.生成所需header
-            Map<String, String> fruitMap = getPublicHeader(env, cookie);
+            Map<String, String> fruitMap = getPublicHeader(cookie);
             try {
                 String body = new JDBodyParam()
                         .Key("babelChannel").stringValue("121")
@@ -228,7 +227,7 @@ public class JDFruits extends IJobHandler {
     private void forecast(Env env, String cookie, JDUser userInfo, Map<String, String> fruitMap) throws URISyntaxException {
         Task task;
         InitFarm initFarm;
-        initFarm = initForFarm(env, cookie);
+        initFarm = initForFarm(cookie);
         Integer totalEnergy = initFarm.getFarmUserPro().getTotalEnergy();
         if (totalEnergy > 110) {
             int n = (totalEnergy - 100) / 10;
@@ -236,7 +235,7 @@ public class JDFruits extends IJobHandler {
             waterGoodForFarm(fruitMap, n);
         }
         task = getTask(fruitMap);
-        initFarm = initForFarm(env, cookie);
+        initFarm = initForFarm(cookie);
         Integer waterEveryDayT = task.getTotalWaterTaskInit().getTotalWaterTaskTimes();
         Integer newTotalEnergy = initFarm.getFarmUserPro().getTotalEnergy();
         XxlJobLogger.log("【今日浇水】{}次", waterEveryDayT);
@@ -283,7 +282,7 @@ public class JDFruits extends IJobHandler {
                         .Key("channel").integerValue(2).buildBody();
                 HashMap<String, String> addFriendHeader = new HashMap<>();
                 addFriendHeader.put("cookie", env.getEnvValue());
-                addFriendHeader.put("User-Agent", env.getUa());
+                addFriendHeader.put("User-Agent", UserAgentUtil.randomUserAgent());
                 JSONObject addFriendObj = httpIns.buildUrl("initForFarm", addBody, addFriendHeader);
                 JSONObject addResult = addFriendObj.getJSONObject("helpResult");
                 if (addResult.getInteger("code") == 0) {
@@ -474,7 +473,7 @@ public class JDFruits extends IJobHandler {
     }
 
     // 生成农场header
-    private Map<String, String> getPublicHeader(Env env, String cookie) {
+    private Map<String, String> getPublicHeader(String cookie) {
         Map<String, String> fruitMap = new HashMap<>();
         fruitMap.put("Host", "api.m.jd.com");
         fruitMap.put("sec-fetch-mode", "cors");
@@ -486,18 +485,18 @@ public class JDFruits extends IJobHandler {
         fruitMap.put("accept-encoding", "gzip, deflate, br");
         fruitMap.put("accept-language", "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7");
         fruitMap.put("cookie", cookie);
-        fruitMap.put("user-agent", env.getUa());
+        fruitMap.put("user-agent", UserAgentUtil.randomUserAgent());
         return fruitMap;
     }
 
     // 校验用户
-    private JDUser checkJdUserInfo(Env env, String cookie) {
+    private JDUser checkJdUserInfo(Env env) {
         JDUser userInfo;
         /*================= 获取用户信息 ================= */
         HashMap<String, String> loginMap = new HashMap<>();
         // 设置获取用户信息header
-        loginMap.put("cookie", cookie);
-        loginMap.put("User-Agent", env.getUa());
+        loginMap.put("cookie", env.getEnvValue());
+        loginMap.put("User-Agent", UserAgentUtil.randomUserAgent());
         XxlJobLogger.log("【用户信息】{}", env.getRemarks());
         userInfo = httpIns.getUserInfo(loginMap);
         if (userInfo == null) {
@@ -526,7 +525,7 @@ public class JDFruits extends IJobHandler {
             try {
                 HashMap<String, String> helpMap = new HashMap<>();
                 helpMap.put("cookie", cookie);
-                helpMap.put("user-agent", env.getUa());
+                helpMap.put("user-agent", UserAgentUtil.randomUserAgent());
                 String body = new JDBodyParam()
                         .Key("imageUrl").stringValue("")
                         .Key("nickName").stringValue("")
@@ -572,8 +571,8 @@ public class JDFruits extends IJobHandler {
     }
 
     // 初始化农场
-    private InitFarm initForFarm(Env env, String cookie) throws URISyntaxException {
-        Map<String, String> publicHeader = getPublicHeader(env, cookie);
+    private InitFarm initForFarm(String cookie) throws URISyntaxException {
+        Map<String, String> publicHeader = getPublicHeader(cookie);
         String body = new JDBodyParam()
                 .Key("version").integerValue(14)
                 .Key("channel").integerValue(1)

@@ -6,6 +6,7 @@ import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.JobHandler;
 import com.xxl.job.core.log.XxlJobLogger;
 import com.xxl.job.executor.core.JDHttpFactory;
+import com.xxl.job.executor.core.UserAgentUtil;
 import com.xxl.job.executor.mapper.EnvMapper;
 import com.xxl.job.executor.po.Env;
 import com.xxl.job.executor.po.JDUser;
@@ -33,7 +34,7 @@ public class JDBeans extends IJobHandler {
 
 
     @Override
-    public ReturnT<String> execute(String param) throws Exception {
+    public ReturnT<String> execute(String param) {
         this.paradiseUuids = getParadiseUuids();
         XxlJobLogger.log("【助力码】您提供了{}个", paradiseUuids.size());
         // 初始化所有ck
@@ -84,7 +85,7 @@ public class JDBeans extends IJobHandler {
         HashMap<String, String> loginMap = new HashMap<>();
         // 设置获取用户信息header
         loginMap.put("cookie", env.getEnvValue());
-        loginMap.put("User-Agent", env.getUa());
+        loginMap.put("User-Agent", UserAgentUtil.randomUserAgent());
         XxlJobLogger.log("【用户信息】{}", env.getRemarks());
         userInfo = httpIns.getUserInfo(loginMap);
         if (userInfo == null) {
