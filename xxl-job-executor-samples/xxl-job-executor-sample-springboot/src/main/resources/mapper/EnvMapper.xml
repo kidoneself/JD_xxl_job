@@ -11,7 +11,6 @@
         <result column="create_time" property="createTime"/>
         <result column="sort" property="sort"/>
         <result column="status" property="status"/>
-        <result column="ua" property="ua"/>
     </resultMap>
 
     <select id="getAllCookie" resultMap="env">
@@ -21,9 +20,7 @@
         t.remarks,
         t.env_value,
         t.create_time,
-        t.sort,
-        t.status,
-        t.ua
+        t.sort
         FROM env AS t
         WHERE t.env_name = #{envName}
         ORDER BY t.sort

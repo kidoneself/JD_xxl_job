@@ -36,7 +36,6 @@ public class XxlJobExecutorExampleBootApplicationTests {
 
     @Test
     public void test() throws UnirestException, URISyntaxException {
-        RestTemplate restTemplate = new RestTemplate();
 //
         HashMap<String, String> headerMap = new HashMap<>();
         headerMap.put("Host", "api.m.jd.com");
@@ -71,16 +70,12 @@ public class XxlJobExecutorExampleBootApplicationTests {
 
             sharkLists.forEach(sharkList -> {
                 if (!sharkList.isFinish()) {
-                    try {
                         String body = new JDBodyParam()
                                 .Key("taskName").stringValue("browseTask")
                                 .Key("taskItemId").integerValue(sharkList.getId()).
                                 buildBody();
-                        JSONObject masterHelpTaskInitForFarm = buildUrl("vvipclub_doTask", body, headerMap);
-                        System.out.println(masterHelpTaskInitForFarm);
-                    } catch (URISyntaxException e) {
-                        e.printStackTrace();
-                    }
+
+
                 }
             });
         } catch (IOException e) {
@@ -131,17 +126,17 @@ public class XxlJobExecutorExampleBootApplicationTests {
     }
 
     @Test
-    public JSONObject buildUrl(String functionId, String body, Map<String, String> headersMap) throws URISyntaxException {
+    public void buildUrl() throws URISyntaxException {
+        String body = "{\"xxxxx\"}";
         String url = new URIBuilder()
                 .setScheme(RequestConstant.SCHEME)
                 .setHost(RequestConstant.HOST)
-                .setParameter(RequestConstant.FUNCTIONID, functionId)
+                .setParameter(RequestConstant.FUNCTIONID, "functionId")
                 .setParameter(RequestConstant.BODY, body)
                 .setParameter(RequestConstant.APPID, "vip_h5")
                 .setParameter("t", new Timestamp(System.currentTimeMillis()).toString())
                 .build().toString();
-        String res = this.doGet(url, headersMap);
-        return JSONObject.parseObject(res);
+        System.out.println(url);
     }
 
 

@@ -10,6 +10,7 @@ import com.xxl.job.executor.core.UserAgentUtil;
 import com.xxl.job.executor.mapper.EnvMapper;
 import com.xxl.job.executor.po.Env;
 import com.xxl.job.executor.po.JDUser;
+import com.xxl.job.executor.service.JDhandler.JDBeanUtils.ShakeRedEnvelopes;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -29,41 +30,48 @@ public class JDBeans extends IJobHandler {
     JDHttpFactory.HttpInstance httpIns;
     List<String> paradiseUuids;
     NumberFormat fmt = NumberFormat.getPercentInstance();
-//    @Resource
-//    private ShakeRedEnvelopes shakeRedEnvelopes;
+    @Resource
+    private ShakeRedEnvelopes shakeRedEnvelopes;
 
 
     @Override
     public ReturnT<String> execute(String param) {
-        this.paradiseUuids = getParadiseUuids();
-        XxlJobLogger.log("【助力码】您提供了{}个", paradiseUuids.size());
-        // 初始化所有ck
+//        this.paradiseUuids = getParadiseUuids();
+//        XxlJobLogger.log("【助力码】您提供了{}个", paradiseUuids.size());
+        // 初始化所有用户
         List<Env> envs = getUsers();
-
         XxlJobLogger.log("==========================================================");
         envs.forEach(env -> {
             JDUser userInfo = checkJdUserInfo(env);
             if (userInfo == null) return;
             // ==========================================================签到领取京豆==========================================================
-            try {
-                String body = "signBeanIndex&appid=ld";
-                HashMap<String, String> beanMap = new HashMap<>();
-                beanMap.put("cookie", env.getEnvValue());
-                JSONObject signBeanIndex = httpIns.buildBeanUrl("signBeanIndex", body, beanMap);
-                if (signBeanIndex.getInteger("code") == 0 && signBeanIndex.getJSONObject("data").getInteger("status") == 1) {
-                    XxlJobLogger.log("【领京豆签到】[{}]获得{}个京豆", env.getRemarks(), signBeanIndex.getJSONObject("data").getJSONObject("dailyAward").getJSONObject("beanAward").getString("beanCount"));
-                } else if (signBeanIndex.getInteger("code") == 0 && signBeanIndex.getJSONObject("data").getInteger("status") == 2) {
-                    XxlJobLogger.log("【领京豆签到】[{}]已签过 ⚠", env.getRemarks());
-                } else if (signBeanIndex.getInteger("code") != 0) {
-                    XxlJobLogger.log("【领京豆签到】[{}]已签过 2⚠", env.getRemarks());
-                }
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
+//            signForBean(env);
             // ==========================================================摇红包==========================================================
-//            shakeRedEnvelopes.getVVipClubLotteryTask(env.getEnvValue(), env.getUa());
+//            try {
+//                shakeRedEnvelopes.getVVipClubLotteryTask(env.getEnvValue());
+//            } catch (URISyntaxException | InterruptedException e) {
+//                e.printStackTrace();
+//            }
         });
         return SUCCESS;
+    }
+
+    private void signForBean(Env env) {
+        try {
+            String body = "signBeanIndex&appid=ld";
+            HashMap<String, String> beanMap = new HashMap<>();
+            beanMap.put("cookie", env.getEnvValue());
+            JSONObject signBeanIndex = httpIns.buildBeanUrl("signBeanIndex", body, beanMap);
+            if (signBeanIndex.getInteger("code") == 0 && signBeanIndex.getJSONObject("data").getInteger("status") == 1) {
+                XxlJobLogger.log("【领京豆签到】[{}]获得{}个京豆", env.getRemarks(), signBeanIndex.getJSONObject("data").getJSONObject("dailyAward").getJSONObject("beanAward").getString("beanCount"));
+            } else if (signBeanIndex.getInteger("code") == 0 && signBeanIndex.getJSONObject("data").getInteger("status") == 2) {
+                XxlJobLogger.log("【领京豆签到】[{}]已签过 ⚠", env.getRemarks());
+            } else if (signBeanIndex.getInteger("code") != 0) {
+                XxlJobLogger.log("【领京豆签到失败】...请稍后重试", env.getRemarks());
+            }
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 
 
