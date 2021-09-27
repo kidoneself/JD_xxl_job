@@ -367,7 +367,6 @@ public class JDFruits extends IJobHandler {
     private InitFromFriends initFromFriends() throws URISyntaxException {
         // 获取好友
         String initBody = new JDBodyParam()
-                .keyMark("lastId").valueMark(null)
                 .keyMark("version").value(14)
                 .keyMark("channel").value(1)
                 .keyMark("babelChannel").valueMark("121").buildBody();
