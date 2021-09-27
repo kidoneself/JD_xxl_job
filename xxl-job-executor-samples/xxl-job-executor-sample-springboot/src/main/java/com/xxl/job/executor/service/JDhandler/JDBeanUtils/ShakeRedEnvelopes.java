@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -54,7 +53,7 @@ public class ShakeRedEnvelopes extends IJobHandler {
     }
 
     private void getTimes()   {
-        String timesBody = new JDBodyParam().Key("info").valueMark("freeTimes").buildBody();
+        String timesBody = new JDBodyParam().keyMark("info").valueMark("freeTimes").buildBody();
         String timeUrl = buildUrl("vvipclub_luckyBox", timesBody, "vip_h5");
         JSONObject jsonObject = getIns.getJsonObject(timeUrl, headerMap);
         this.times = jsonObject.getJSONObject("data").getInteger("freeTimes");
@@ -65,7 +64,7 @@ public class ShakeRedEnvelopes extends IJobHandler {
         for (int i = 0; i < times; i++) {
             Thread.sleep(2000);
             XxlJobLogger.log("等待两秒继续执行");
-            String body = new JDBodyParam().Key("type").valueMark(0).buildBody();
+            String body = new JDBodyParam().keyMark("type").valueMark(0).buildBody();
             String url = buildUrl("vvipclub_shaking_lottery", body, "vip_h5");
 //            String url = "https://api.m.jd.com/client.action?functionId=vvipclub_shaking_lottery&appid=vip_h5&body=%7Btype%3A%220%22%7D&_=1632409857039";
             JSONObject jsonObject = getIns.getJsonObject(url, headerMap);
@@ -85,8 +84,8 @@ public class ShakeRedEnvelopes extends IJobHandler {
 
     private void getAndDoTask() {
         String vvipclub_lotteryTask_body = new JDBodyParam()
-                .Key("info").stringValue("browseTask")
-                .Key("withItem").boolValue(true).buildBody();
+                .keyMark("info").valueMark("browseTask")
+                .keyMark("withItem").value(true).buildBody();
         String vvipclub_lotteryTask = buildUrl("vvipclub_lotteryTask", vvipclub_lotteryTask_body, "vip_h5");
         JSONObject vvipclub_lotteryTask_jsonObject = getIns.getJsonObject(vvipclub_lotteryTask, headerMap);
         ShakeList shakeList = vvipclub_lotteryTask_jsonObject.toJavaObject(ShakeList.class);
@@ -95,8 +94,8 @@ public class ShakeRedEnvelopes extends IJobHandler {
         sharkLists.forEach(sharkList -> {
             if (!sharkList.isFinish()) {
                 String body = new JDBodyParam()
-                        .Key("taskName").stringValue("browseTask")
-                        .Key("taskItemId").integerValue(sharkList.getId()).buildBody();
+                        .keyMark("taskName").valueMark("browseTask")
+                        .keyMark("taskItemId").value(sharkList.getId()).buildBody();
                 // 浏览所有任务
                 String vvipclub_doTask = null;
                 try {
@@ -113,9 +112,9 @@ public class ShakeRedEnvelopes extends IJobHandler {
     private JSONObject getShakeRed() throws
             URISyntaxException {
         String token = new JDBodyParam()
-                .Key("token").stringValue("dd2fb032-9fa3-493b-8cd0-0d57cd51812d").buildBody();
+                .keyMark("token").valueMark("dd2fb032-9fa3-493b-8cd0-0d57cd51812d").buildBody();
         String paramData_body = new JDBodyParam()
-                .Key("paramData").stringValueNo(token).buildBody();
+                .keyMark("paramData").value(token).buildBody();
         String pg_channel_page_data = buildUrlSharkBean("pg_channel_page_data", paramData_body);
         JSONObject jsonObject = getIns.getJsonObject(pg_channel_page_data, headerMap);
         return jsonObject.getJSONObject("data");

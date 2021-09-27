@@ -5,8 +5,10 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.xxl.job.executor.core.HeaderUtil;
 import com.xxl.job.executor.core.JDBodyParam;
 import com.xxl.job.executor.core.RequestConstant;
+import com.xxl.job.executor.core.UserAgentUtil;
 import com.xxl.job.executor.po.ShakeList;
 import com.xxl.job.executor.po.TaskItemsItem;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -20,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.URI;
@@ -29,6 +30,7 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -70,10 +72,10 @@ public class XxlJobExecutorExampleBootApplicationTests {
 
             sharkLists.forEach(sharkList -> {
                 if (!sharkList.isFinish()) {
-                        String body = new JDBodyParam()
-                                .Key("taskName").stringValue("browseTask")
-                                .Key("taskItemId").integerValue(sharkList.getId()).
-                                buildBody();
+                    String body = new JDBodyParam()
+                            .keyMark("taskName").valueMark("browseTask")
+                            .keyMark("taskItemId").value(sharkList.getId()).
+                            buildBody();
 
 
                 }
@@ -141,7 +143,12 @@ public class XxlJobExecutorExampleBootApplicationTests {
 
 
     @Test
-    public void aaa() {
-        System.out.println(new Timestamp(System.currentTimeMillis()));
+    public void aaa() throws InterruptedException {
+
+        Random random = new Random();
+
+
+
+
     }
 }

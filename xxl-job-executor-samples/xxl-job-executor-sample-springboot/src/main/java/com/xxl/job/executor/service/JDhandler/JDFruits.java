@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 
 import javax.annotation.Resource;
 import java.net.URISyntaxException;
-import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -48,11 +47,9 @@ public class JDFruits extends IJobHandler {
     JDUser userInfo;
     String ua = UserAgentUtil.randomUserAgent();
     Env env;
-    String cookie;
     HashMap<String, String> fruitMap = new HashMap<>();
 
     @Override
-
     public ReturnT<String> execute(String param) {
 
         //初始化所有农场shareCode
@@ -63,12 +60,9 @@ public class JDFruits extends IJobHandler {
 
         // 2.开始执行任务
         envs.forEach(env -> {
+            this.env = env;
             XxlJobLogger.log("\uD83E\uDD1C【{}】东东农场任务开始执行\uD83E\uDD1B", env.getRemarks());
             try {
-                // 3.获取当前cookie
-                this.env = env;
-                cookie = env.getEnvValue();
-                // 5. 校验当前cookie
                 userInfo = commonHandler.checkJdUserInfo(env);
                 if (userInfo == null) return;
                 // 4.生成所需header
@@ -93,8 +87,7 @@ public class JDFruits extends IJobHandler {
 
                 // 3-三餐任务
                 gotThreeMealForFarm();
-                // 5-十次浇水任务
-                totalWaterTaskForFarm();
+
                 // 6-红包雨任务
                 waterRainForFarm();
                 // 小鸭子
@@ -113,13 +106,11 @@ public class JDFruits extends IJobHandler {
                 getTwoHelp();
                 // 开始执行浇水任务
                 doWater();
+
                 // 领取10次浇水奖励
                 firstWaterTaskForFarm();
                 // 助力好友
                 help();
-                // 预测结果
-//                doWaterAgain();
-//                forecast();
             } catch (Exception e) {
                 e.printStackTrace();
                 XxlJobLogger.log("账号似乎存在问题，新号可能导致脚本执行不稳定！！京东服务器返回空数据");
@@ -130,26 +121,27 @@ public class JDFruits extends IJobHandler {
         // 农场助力奖励
 
         XxlJobLogger.log("-----------------------------------------------------");
-        XxlJobLogger.log("|                  开始领取助力奖励                  |");
+        XxlJobLogger.log("|*******************开始领取助力奖励*******************|");
         XxlJobLogger.log("-----------------------------------------------------");
         envs.forEach(env -> {
-            // 5. 校验当前cookie
+            this.env = env;
+            fruitMap = getPublicHeader();
             JDUser userInfo = commonHandler.checkJdUserInfo(env);
             if (userInfo == null) return;
             // 4.生成所需header
             Map<String, String> fruitMap = getPublicHeader();
             try {
                 String body = new JDBodyParam()
-                        .Key("babelChannel").stringValue("121")
-                        .Key("channel").integerValue(1)
-                        .Key("version").integerValue(14).buildBody();
+                        .keyMark("babelChannel").valueMark("121")
+                        .keyMark("channel").value(1)
+                        .keyMark("version").value(14).buildBody();
                 JSONObject masterHelpTaskInitForFarm = httpIns.buildUrl("masterHelpTaskInitForFarm", body, fruitMap);
                 JSONArray masterHelpPeoples = masterHelpTaskInitForFarm.getJSONArray("masterHelpPeoples");
                 if (!masterHelpTaskInitForFarm.getBoolean("f") && masterHelpPeoples != null && masterHelpPeoples.size() == 5) {
                     String getBody = new JDBodyParam()
-                            .Key("babelChannel").stringValue("121")
-                            .Key("channel").integerValue(1)
-                            .Key("version").integerValue(14).buildBody();
+                            .keyMark("babelChannel").valueMark("121")
+                            .keyMark("channel").value(1)
+                            .keyMark("version").value(14).buildBody();
                     JSONObject masterGotFinishedTaskForFarm = httpIns.buildUrl("masterGotFinishedTaskForFarm", getBody, fruitMap);
                     XxlJobLogger.log("【好友助力奖励】获得{}g💧", masterGotFinishedTaskForFarm.get("amount"));
                 } else if (!masterHelpTaskInitForFarm.getBoolean("f") && masterHelpPeoples != null) {
@@ -165,9 +157,11 @@ public class JDFruits extends IJobHandler {
         });
 
         XxlJobLogger.log("-----------------------------------------------------");
-        XxlJobLogger.log("|                       开始预测                    |");
+        XxlJobLogger.log("|**********************开始预测**********************|");
         XxlJobLogger.log("-----------------------------------------------------");
         envs.forEach(env -> {
+            this.env = env;
+            fruitMap = getPublicHeader();
             try {
                 forecast();
             } catch (URISyntaxException e) {
@@ -184,7 +178,7 @@ public class JDFruits extends IJobHandler {
         if (totalEnergy >= 110) {
             int n = (totalEnergy - 100) / 10;
             XxlJobLogger.log("【剩余水滴】{}g\uD83D\uDCA7继续浇水{}次", totalEnergy, n);
-            waterGoodForFarm(fruitMap, n);
+            waterGoodForFarm(n);
         }
     }
 
@@ -202,17 +196,17 @@ public class JDFruits extends IJobHandler {
         getTask();
         Integer waterDay = task.getTotalWaterTaskInit().getTotalWaterTaskTimes();
         if (waterDay < 10) {
-            waterGoodForFarm(fruitMap, 10 - waterDay);
+            waterGoodForFarm(10 - waterDay);
         }
     }
 
     private void getFullCollectionReward() throws URISyntaxException {
         for (int i = 0; i < 6; i++) {
             String body = new JDBodyParam()
-                    .Key("type").integerValue(2)
-                    .Key("babelChannel").stringValue("121")
-                    .Key("channel").integerValue(1)
-                    .Key("version").integerValue(14).buildBody();
+                    .keyMark("type").value(2)
+                    .keyMark("babelChannel").valueMark("121")
+                    .keyMark("channel").value(1)
+                    .keyMark("version").value(14).buildBody();
             JSONObject getFullCollectionReward = httpIns.buildUrl("getFullCollectionReward", body, fruitMap);
             if (getFullCollectionReward.containsKey("addWater") && getFullCollectionReward.getInteger("code") == 0) {
                 XxlJobLogger.log("【{}】获得{}g💧", getFullCollectionReward.get("title"), getFullCollectionReward.get("addWater"));
@@ -225,9 +219,9 @@ public class JDFruits extends IJobHandler {
             Integer winTimes = task.getWaterRainInit().getWinTimes();
             for (int i = 0; i < 2 - winTimes; i++) {
                 String body = new JDBodyParam()
-                        .Key("type").integerValue(1)
-                        .Key("hongBaoTimes").integerValue(100)
-                        .Key("version").integerValue(3).buildBody();
+                        .keyMark("type").value(1)
+                        .keyMark("hongBaoTimes").value(100)
+                        .keyMark("version").value(3).buildBody();
                 JSONObject totalWaterTaskForFarm = httpIns.buildUrl("waterRainForFarm", body, fruitMap);
                 if (totalWaterTaskForFarm.getInteger("code") == 0) {
                     XxlJobLogger.log("【红包雨】获得{}g💧", totalWaterTaskForFarm.get("addEnergy"));
@@ -248,7 +242,9 @@ public class JDFruits extends IJobHandler {
         initFarm = initForFarm();
         Integer waterEveryDayT = task.getTotalWaterTaskInit().getTotalWaterTaskTimes();
         Integer newTotalEnergy = initFarm.getFarmUserPro().getTotalEnergy();
+        FarmUserPro farmUserPro = initFarm.getFarmUserPro();
         XxlJobLogger.log("***********【{}】***********", env.getRemarks());
+        XxlJobLogger.log("【当前种植】{}次", farmUserPro.getName());
         XxlJobLogger.log("【今日浇水】{}次", waterEveryDayT);
         XxlJobLogger.log("【剩余水滴】{}g\uD83D\uDCA7", newTotalEnergy);
         Integer treeEnergy = initFarm.getFarmUserPro().getTreeEnergy();
@@ -273,9 +269,9 @@ public class JDFruits extends IJobHandler {
     private void getTwoHelp() throws URISyntaxException {
         // 领取两次浇水任务
         String twoBody = new JDBodyParam()
-                .Key("version").integerValue(14)
-                .Key("channel").integerValue(1)
-                .Key("babelChannel").stringValue("121").buildBody();
+                .keyMark("version").value(14)
+                .keyMark("channel").value(1)
+                .keyMark("babelChannel").valueMark("121").buildBody();
         JSONObject friendsObj = httpIns.buildUrl("waterFriendGotAwardForFarm", twoBody, fruitMap);
         if (friendsObj.getInteger("code") == 0) {
             XxlJobLogger.log("【好友浇水任务】获得{}g💧", friendsObj.get("addWater"));
@@ -286,11 +282,11 @@ public class JDFruits extends IJobHandler {
         shareCodes.forEach(shareCode -> {
             try {
                 String addBody = new JDBodyParam()
-                        .Key("imageUrl").stringValue("")
-                        .Key("nickName").stringValue("")
-                        .Key("shareCode").stringValue(shareCode + "-inviteFriend")
-                        .Key("version").integerValue(4)
-                        .Key("channel").integerValue(2).buildBody();
+                        .keyMark("imageUrl").valueMark("")
+                        .keyMark("nickName").valueMark("")
+                        .keyMark("shareCode").valueMark(shareCode + "-inviteFriend")
+                        .keyMark("version").value(4)
+                        .keyMark("channel").value(2).buildBody();
                 HashMap<String, String> addFriendHeader = new HashMap<>();
                 addFriendHeader.put("cookie", env.getEnvValue());
                 addFriendHeader.put("User-Agent", UserAgentUtil.randomUserAgent());
@@ -310,10 +306,10 @@ public class JDFruits extends IJobHandler {
     private JSONObject initFriendFrom(Map<String, String> fruitMap, String shareCode) throws URISyntaxException {
         //初始话好友农场
         String initFriendBody = new JDBodyParam()
-                .Key("shareCode").stringValue(shareCode)
-                .Key("version").integerValue(14)
-                .Key("channel").integerValue(1)
-                .Key("babelChannel").stringValue("121")
+                .keyMark("shareCode").valueMark(shareCode)
+                .keyMark("version").value(14)
+                .keyMark("channel").value(1)
+                .keyMark("babelChannel").valueMark("121")
                 .buildBody();
         return httpIns.buildUrl("friendInitForFarm", initFriendBody, fruitMap);
     }
@@ -329,10 +325,10 @@ public class JDFruits extends IJobHandler {
             oldFriends.forEach(friend -> {
                 try {
                     String delBody = new JDBodyParam()
-                            .Key("shareCode").stringValue(friend.getShareCode())
-                            .Key("version").integerValue(14)
-                            .Key("channel").integerValue(1)
-                            .Key("babelChannel").stringValue("121").buildBody();
+                            .keyMark("shareCode").valueMark(friend.getShareCode())
+                            .keyMark("version").value(14)
+                            .keyMark("channel").value(1)
+                            .keyMark("babelChannel").valueMark("121").buildBody();
                     JSONObject delFriendObj = httpIns.buildUrl("deleteFriendForFarm", delBody, fruitMap);
                     if (delFriendObj.getString("code").equals("0")) {
                         XxlJobLogger.log("【删除好友】成功删除好友：【" + friend.getNickName() + "】");
@@ -353,10 +349,10 @@ public class JDFruits extends IJobHandler {
             if (canWaterFriend) {
                 try {
                     String initBody = new JDBodyParam()
-                            .Key("shareCode").stringValue(shareCode)
-                            .Key("version").integerValue(14)
-                            .Key("channel").integerValue(1)
-                            .Key("babelChannel").stringValue("121").buildBody();
+                            .keyMark("shareCode").valueMark(shareCode)
+                            .keyMark("version").value(14)
+                            .keyMark("channel").value(1)
+                            .keyMark("babelChannel").valueMark("121").buildBody();
                     JSONObject friendsObj = httpIns.buildUrl("waterFriendForFarm", initBody, fruitMap);
                     if (friendsObj.getInteger("code") == 0 && friendsObj.getString("sendCard") != null) {
                         XxlJobLogger.log("【好友浇水任务】获得{}卡", friendsObj.getString("sendCard"));
@@ -371,10 +367,10 @@ public class JDFruits extends IJobHandler {
     private InitFromFriends initFromFriends() throws URISyntaxException {
         // 获取好友
         String initBody = new JDBodyParam()
-                .Key("lastId").stringValue(null)
-                .Key("version").integerValue(14)
-                .Key("channel").integerValue(1)
-                .Key("babelChannel").stringValue("121").buildBody();
+                .keyMark("lastId").valueMark(null)
+                .keyMark("version").value(14)
+                .keyMark("channel").value(1)
+                .keyMark("babelChannel").valueMark("121").buildBody();
         JSONObject friendsObj = httpIns.buildUrl("friendListInitForFarm", initBody, fruitMap);
         // 获取好友列表
         return friendsObj.toJavaObject(InitFromFriends.class);
@@ -382,9 +378,9 @@ public class JDFruits extends IJobHandler {
 
     private JSONObject getTenTask() throws URISyntaxException {
         String initBody = new JDBodyParam()
-                .Key("version").integerValue(14)
-                .Key("channel").integerValue(1)
-                .Key("babelChannel").stringValue("121").buildBody();
+                .keyMark("version").value(14)
+                .keyMark("channel").value(1)
+                .keyMark("babelChannel").valueMark("121").buildBody();
         return httpIns.buildUrl("totalWaterTaskForFarm", initBody, fruitMap);
     }
 
@@ -392,19 +388,19 @@ public class JDFruits extends IJobHandler {
         // 签到任务
         XxlJobLogger.log("开始初始化【" + env.getRemarks() + "】的签到任务");
         String initBody = new JDBodyParam()
-                .Key("timestamp").integerValue(new Timestamp(System.currentTimeMillis()))
-                .Key("version").integerValue(14)
-                .Key("channel").integerValue(1)
-                .Key("babelChannel").stringValue("121").buildBody();
+                .keyMark("timestamp").value(System.currentTimeMillis())
+                .keyMark("version").value(14)
+                .keyMark("channel").value(1)
+                .keyMark("babelChannel").valueMark("121").buildBody();
         JSONObject clockInInitForFarm = httpIns.buildUrl("clockInInitForFarm", initBody, fruitMap);
 
         // 开始签到
         if (!clockInInitForFarm.getBoolean("todaySigned")) {
             String signBody = new JDBodyParam()
-                    .Key("type").integerValue(1)
-                    .Key("version").integerValue(14)
-                    .Key("channel").integerValue(1)
-                    .Key("babelChannel").stringValue("121").buildBody();
+                    .keyMark("type").value(1)
+                    .keyMark("version").value(14)
+                    .keyMark("channel").value(1)
+                    .keyMark("babelChannel").valueMark("121").buildBody();
             JSONObject clockInForFarm = httpIns.buildUrl("clockInForFarm", signBody, fruitMap);
             XxlJobLogger.log("【签到任务】获取到：{}g💧", clockInForFarm.get("amount"));
             Integer signDay = clockInForFarm.getInteger("signDay");
@@ -422,24 +418,24 @@ public class JDFruits extends IJobHandler {
 
     private void flow() throws URISyntaxException {
         String initBody = new JDBodyParam()
-                .Key("timestamp").integerValue(new Timestamp(System.currentTimeMillis()))
-                .Key("version").integerValue(14)
-                .Key("channel").integerValue(1)
-                .Key("babelChannel").stringValue("121").buildBody();
+                .keyMark("timestamp").value(System.currentTimeMillis())
+                .keyMark("version").value(14)
+                .keyMark("channel").value(1)
+                .keyMark("babelChannel").valueMark("121").buildBody();
         JSONObject clockInInitForFarm = httpIns.buildUrl("clockInInitForFarm", initBody, fruitMap);
         List<Theme> themes = clockInInitForFarm.getJSONArray("themes").toJavaList(Theme.class);
         for (Theme theme : themes) {
             if (!theme.getHadGot()) {
                 String flowBody = new JDBodyParam()
-                        .Key("id").stringValue(theme.getId().toString())
-                        .Key("type").stringValue("theme")
-                        .Key("step").integerValue(1).buildBody();
+                        .keyMark("id").valueMark(theme.getId().toString())
+                        .keyMark("type").valueMark("theme")
+                        .keyMark("step").value(1).buildBody();
                 JSONObject flowObj = httpIns.buildUrl("clockInFollowForFarm", flowBody, fruitMap);
                 if (flowObj.getInteger("code") == 0) {
                     String getBody = new JDBodyParam()
-                            .Key("id").stringValue(theme.getId().toString())
-                            .Key("type").stringValue("theme")
-                            .Key("step").integerValue(2).buildBody();
+                            .keyMark("id").valueMark(theme.getId().toString())
+                            .keyMark("type").valueMark("theme")
+                            .keyMark("step").value(2).buildBody();
                     JSONObject getObj = httpIns.buildUrl("clockInFollowForFarm", getBody, fruitMap);
                     XxlJobLogger.log("【关注领水】[{}]获得{}g💧", theme.getAdDesc(), getObj.get("amount"));
                 }
@@ -453,9 +449,9 @@ public class JDFruits extends IJobHandler {
         // 领取十次浇水任务奖励
         if (!task.getTotalWaterTaskInit().getTotalWaterTaskFinished()) {
             String body = new JDBodyParam()
-                    .Key("version").integerValue(14)
-                    .Key("channel").integerValue(1)
-                    .Key("babelChannel").stringValue("121").buildBody();
+                    .keyMark("version").value(14)
+                    .keyMark("channel").value(1)
+                    .keyMark("babelChannel").valueMark("121").buildBody();
             JSONObject totalWaterTaskForFarm = httpIns.buildUrl("totalWaterTaskForFarm", body, fruitMap);
             if (totalWaterTaskForFarm.getInteger("code") == 0) {
                 XxlJobLogger.log("【十次浇水】获得{}g💧", totalWaterTaskForFarm.get("totalWaterTaskEnergy"));
@@ -469,21 +465,22 @@ public class JDFruits extends IJobHandler {
     private void additionalAfterWater(Map<String, String> fruitMap) throws URISyntaxException {
         // 领取十次浇水后跳转小程序奖励
         String body = new JDBodyParam()
-                .Key("type").integerValue(3)
-                .Key("version").integerValue(14)
-                .Key("channel").integerValue(1)
-                .Key("babelChannel").stringValue("121").buildBody();
+                .keyMark("type").value(3)
+                .keyMark("version").value(14)
+                .keyMark("channel").value(1)
+                .keyMark("babelChannel").valueMark("121").buildBody();
         JSONObject gotWaterGoalTaskForFarm = httpIns.buildUrl("gotWaterGoalTaskForFarm", body, fruitMap);
+        System.out.println("gotWaterGoalTaskForFarm==" + gotWaterGoalTaskForFarm);
         if (gotWaterGoalTaskForFarm.getInteger("code") == 0) {
-            XxlJobLogger.log("【小程序签到】获得{}g💧", gotWaterGoalTaskForFarm.get("amount"));
+            XxlJobLogger.log("【小程序签到】获得{}g💧", gotWaterGoalTaskForFarm.get("addEnergy"));
         }
     }
 
     private void getTask() throws URISyntaxException {
         String body = new JDBodyParam()
-                .Key("version").integerValue(14)
-                .Key("channel").integerValue(1)
-                .Key("babelChannel").stringValue("121").buildBody();
+                .keyMark("version").value(14)
+                .keyMark("channel").value(1)
+                .keyMark("babelChannel").valueMark("121").buildBody();
         JSONObject taskInitForFarm = httpIns.buildUrl("taskInitForFarm", body, fruitMap);
         this.task = taskInitForFarm.toJavaObject(Task.class);
     }
@@ -500,9 +497,8 @@ public class JDFruits extends IJobHandler {
         fruitMap.put("referer", "https://carry.m.jd.com/babelDiy/Zeus/3KSjXqQabiTuD1cJ28QskrpWoBKT/index.html?babelChannel=121&lng=121.463611&lat=31.021696&sid=5ff1f498bb1025bac5c96263ecafc15w&un_area=2_2813_61130_0");
         fruitMap.put("accept-encoding", "gzip, deflate, br");
         fruitMap.put("accept-language", "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7");
-        fruitMap.put("cookie", cookie);
+        fruitMap.put("cookie", env.getEnvValue());
         fruitMap.put("user-agent", ua);
-
         return fruitMap;
     }
 
@@ -511,14 +507,14 @@ public class JDFruits extends IJobHandler {
         for (String shareCode : shareCodes) {
             try {
                 HashMap<String, String> helpMap = new HashMap<>();
-                helpMap.put("cookie", cookie);
+                helpMap.put("cookie", env.getEnvValue());
                 helpMap.put("user-agent", UserAgentUtil.randomUserAgent());
                 String body = new JDBodyParam()
-                        .Key("imageUrl").stringValue("")
-                        .Key("nickName").stringValue("")
-                        .Key("shareCode").stringValue(shareCode)
-                        .Key("babelChannel").integerValue(2)
-                        .Key("channel").integerValue(1)
+                        .keyMark("imageUrl").valueMark("")
+                        .keyMark("nickName").valueMark("")
+                        .keyMark("shareCode").valueMark(shareCode)
+                        .keyMark("babelChannel").value(2)
+                        .keyMark("channel").value(1)
                         .buildBody();
                 JSONObject gotWaterGoalTaskForFarm = httpIns.buildUrl("initForFarm", body, helpMap);
                 HelpWater helpWater = JSONObject.parseObject(gotWaterGoalTaskForFarm.toString(), HelpWater.class);
@@ -561,9 +557,9 @@ public class JDFruits extends IJobHandler {
     private InitFarm initForFarm() throws URISyntaxException {
         Map<String, String> publicHeader = getPublicHeader();
         String body = new JDBodyParam()
-                .Key("version").integerValue(14)
-                .Key("channel").integerValue(1)
-                .Key("babelChannel").stringValue("121").buildBody();
+                .keyMark("version").value(14)
+                .keyMark("channel").value(1)
+                .keyMark("babelChannel").valueMark("121").buildBody();
         JSONObject initForFarm = httpIns.buildUrl("initForFarm", body, publicHeader);
         return JSONObject.parseObject(String.valueOf(initForFarm), InitFarm.class);
     }
@@ -599,20 +595,20 @@ public class JDFruits extends IJobHandler {
     // 5个浏览任务api
     private JSONObject doTask(Map<String, String> taskMap, AdTask adTask, Integer type) throws URISyntaxException {
         String body = new JDBodyParam()
-                .Key("advertId").stringValue(adTask.getAdvertId())
-                .Key("type").integerValue(type)
-                .Key("version").integerValue(14)
-                .Key("channel").integerValue(1)
-                .Key("babelChannel").stringValue("121").buildBody();
+                .keyMark("advertId").valueMark(adTask.getAdvertId())
+                .keyMark("type").value(type)
+                .keyMark("version").value(14)
+                .keyMark("channel").value(1)
+                .keyMark("babelChannel").valueMark("121").buildBody();
         return httpIns.buildUrl("browseAdTaskForFarm", body, taskMap);
     }
 
     // 首次浇水任务
     private void firstWaterTaskForFarm() throws URISyntaxException {
         String body = new JDBodyParam()
-                .Key("version").integerValue(14)
-                .Key("channel").integerValue(1)
-                .Key("babelChannel").stringValue("121").buildBody();
+                .keyMark("version").value(14)
+                .keyMark("channel").value(1)
+                .keyMark("babelChannel").valueMark("121").buildBody();
         JSONObject firstWaterTaskForFarm = httpIns.buildUrl("firstWaterTaskForFarm", body, fruitMap);
         if (firstWaterTaskForFarm.getInteger("code") != 0) {
             XxlJobLogger.log("【首次浇水】任务已完成");
@@ -629,14 +625,14 @@ public class JDFruits extends IJobHandler {
     }
 
     // 浇水10次api
-    private void waterGoodForFarm(Map<String, String> taskMap, int n) throws URISyntaxException {
+    private void waterGoodForFarm(int n) throws URISyntaxException {
         String body = new JDBodyParam()
-                .Key("type").stringValue("")
-                .Key("version").integerValue(14)
-                .Key("channel").integerValue(1)
-                .Key("babelChannel").stringValue("121").buildBody();
+                .keyMark("type").valueMark("")
+                .keyMark("version").value(14)
+                .keyMark("channel").value(1)
+                .keyMark("babelChannel").valueMark("121").buildBody();
         for (int i = 0; i < n; i++) {
-            JSONObject tenWaterObj = httpIns.buildUrl("waterGoodForFarm", body, taskMap);
+            JSONObject tenWaterObj = httpIns.buildUrl("waterGoodForFarm", body, fruitMap);
             if (!(tenWaterObj.getInteger("code") == 0)) {
                 return;
             } else {
@@ -649,9 +645,9 @@ public class JDFruits extends IJobHandler {
         XxlJobLogger.log("开始领取定时水滴");
         if (!task.getGotThreeMealInit().getF()) {
             String body = new JDBodyParam()
-                    .Key("version").integerValue(14)
-                    .Key("channel").integerValue(1)
-                    .Key("babelChannel").stringValue("121").buildBody();
+                    .keyMark("version").value(14)
+                    .keyMark("channel").value(1)
+                    .keyMark("babelChannel").valueMark("121").buildBody();
             JSONObject threeObj = httpIns.buildUrl("gotThreeMealForFarm", body, fruitMap);
             if (!threeObj.get("code").equals("0")) {
                 XxlJobLogger.log("【定时领水】时间未到或者已领取");

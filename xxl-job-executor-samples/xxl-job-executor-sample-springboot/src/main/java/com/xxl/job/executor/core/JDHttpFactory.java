@@ -10,7 +10,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -26,61 +25,14 @@ public class JDHttpFactory {
 
     @Data
     public static class HttpInstance {
+        final String API = "https://api.m.jd.com/client.action";
 
         // build api
         public JSONObject buildUrl(String functionId, String body, Map<String, String> headersMap) throws URISyntaxException {
-            String url = new URIBuilder()
-                    .setScheme(RequestConstant.SCHEME)
-                    .setHost(RequestConstant.HOST)
-                    .setParameter(RequestConstant.FUNCTIONID, functionId)
-                    .setParameter(RequestConstant.BODY, body)
-                    .setParameter(RequestConstant.APPID, RequestConstant.WH5)
-                    .build().toString();
+            String url = String.format("%s?functionId=%s&appid=%s&body=%s",
+                    API, functionId, RequestConstant.WH5, body);
             String res = this.doGet(url, headersMap);
             return JSONObject.parseObject(res);
-        }
-        // build api
-        public JSONObject buildBeanUrl(String functionId, String body, Map<String, String> headersMap) throws URISyntaxException {
-            String url = new URIBuilder()
-                    .setScheme(RequestConstant.SCHEME)
-                    .setHost(RequestConstant.HOST)
-                    .setParameter(RequestConstant.FUNCTIONID, functionId)
-                    .setParameter(RequestConstant.BODY, body)
-                    .setParameter(RequestConstant.APPID, RequestConstant.ld)
-                    .build().toString();
-            String res = this.doGet(url, headersMap);
-            return JSONObject.parseObject(res);
-        }
-        /**
-         * 获取用户信息
-         *
-         * @return
-         */
-        public JDUser getUserInfo(HashMap<String, String> map) {
-            String userInfoUrl = "https://wq.jd.com/user_new/info/GetJDUserInfoUnion?sceneval=2";
-            HashMap<String, String> loginMap = new HashMap<>(map);
-            loginMap.put("accept", "*/*");
-            loginMap.put("accept-encoding", "gzip, deflate, br");
-            loginMap.put("accept-language", "zh-CN,zh;q=0.9");
-            loginMap.put("origin", "no-cache");
-            loginMap.put("cache-control", "https://home.m.jd.com");
-            loginMap.put("referer", "https://home.m.jd.com/myJd/newhome.action?sceneval=2&ufc=&");
-            loginMap.put("sec-fetch-dest", "empty");
-            loginMap.put("sec-fetch-mode", "cors");
-            loginMap.put("sec-fetch-site", "same-site");
-            loginMap.put("Content-Type", "application/x-www-form-urlencoded");
-            String response = doGet(userInfoUrl, loginMap);
-            if (!response.contains("retcode")) {
-                XxlJobLogger.log("用户Cookie填写错误，请填写正确的Cookie");
-            }
-            JSONObject result = JSONObject.parseObject(response);
-            JSONObject data = result.getJSONObject("data");
-            if (data.size() == 0) {
-                XxlJobLogger.log("cookie失效，请获取最新的cookie");
-                return null;
-            }
-            JSONObject o = result.getJSONObject("data").getJSONObject("userInfo").getJSONObject("baseInfo");
-            return JSON.toJavaObject(o, JDUser.class);
         }
 
         /**
