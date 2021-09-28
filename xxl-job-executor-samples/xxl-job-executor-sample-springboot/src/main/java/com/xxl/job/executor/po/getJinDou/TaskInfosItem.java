@@ -6,14 +6,14 @@ import lombok.Data;
 public @Data class TaskInfosItem{
 	private String subTitleName;
 	private String score;
-	private int maxTimes;
-	private int taskType;
+	private Integer maxTimes;
+	private Integer taskType;
 	private String process;
-	private int waitDuration;
-	private int times;
+	private Integer waitDuration;
+	private Integer times;
 	private String icon;
 	private String taskName;
 	private List<SubTaskVOSItem> subTaskVOS;
-	private int taskId;
-	private int status;
+	private Integer taskId;
+	private Integer status;
 }

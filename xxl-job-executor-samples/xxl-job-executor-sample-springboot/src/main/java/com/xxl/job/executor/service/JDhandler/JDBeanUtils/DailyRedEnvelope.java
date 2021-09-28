@@ -37,6 +37,8 @@ public class DailyRedEnvelope extends IJobHandler {
     List<String> shareCodes;
     Env env;
     String ua = UserAgentUtil.randomUserAgent();
+    final String API = "https://api.m.jd.com/client.action";
+//    String ua = "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1";
 
     @Override
     public ReturnT<String> execute(String param) {
@@ -65,7 +67,7 @@ public class DailyRedEnvelope extends IJobHandler {
                 .keyMark("version").value(14)
                 .keyMark("channel").value(1)
                 .keyMark("babelChannel").valueMark("121").buildBody();
-        String farmUrl = getIns.buildUrl("initForFarm", body, "wh5");
+        String farmUrl = buildUrl("initForFarm", body, "wh5");
         JSONObject jsonObject = getIns.getJsonObject(farmUrl, publicHeader);
         InitFarm initFarm = jsonObject.toJavaObject(InitFarm.class);
         FarmUserPro farmUserPro = initFarm.getFarmUserPro();
@@ -75,16 +77,18 @@ public class DailyRedEnvelope extends IJobHandler {
         if (shareCodes.contains(shareCode)) {
             for (Env helpEnv : envs) {
                 String helpBody = new JDBodyParam()
+                        .keyMark("shareCode").valueMark(shareCode + "-3")
                         .keyMark("imageUrl").valueMark(null)
                         .keyMark("nickName").valueMark(null)
-                        .keyMark("shareCode").valueMark(shareCode + "-3")
                         .keyMark("babelChannel").valueMark(3)
                         .keyMark("version").value(4)
                         .keyMark("channel").value(1).buildBody();
-                String initForFarmUrl = getIns.buildUrl("initForFarm", helpBody, "wh5");
-                HashMap<String, String> headerMap = getTaskMap(helpEnv.getEnvValue());
+                String initForFarmUrl = buildUrl("initForFarm", helpBody, "wh5");
+                HashMap<String, String> headerMap = new HashMap<>();
+                headerMap.put("User-Agent", ua);
+                headerMap.put("cookie", helpEnv.getEnvValue());
                 JSONObject initForFarm = getIns.getJsonObject(initForFarmUrl, headerMap);
-                if (initForFarm.getInteger("code") == 0) {
+                if (initForFarm.getJSONObject("helpResult") != null && initForFarm.getInteger("code") == 0) {
                     JSONObject helpResult = initForFarm.getJSONObject("helpResult");
                     if (helpResult.getInteger("code") == 0) {
                         XxlJobLogger.log("【天天抽奖】{}助力!!", helpEnv.getRemarks());
@@ -93,6 +97,8 @@ public class DailyRedEnvelope extends IJobHandler {
                     } else if (helpResult.getInteger("code") == 13) {
                         XxlJobLogger.log("【天天抽奖】{}助力已经用完", helpEnv.getRemarks());
                     }
+                } else {
+                    XxlJobLogger.log("【天天抽奖】助力失败");
                 }
             }
         }
@@ -147,7 +153,7 @@ public class DailyRedEnvelope extends IJobHandler {
                     .keyMark("type").value(1)
                     .keyMark("version").value(4)
                     .keyMark("channel").value(1).buildBody();
-            String lotteryForTurntableFarm = getIns.buildUrl("lotteryForTurntableFarm", lotteryForTurntableFarmBody, "wh5");
+            String lotteryForTurntableFarm = buildUrl("lotteryForTurntableFarm", lotteryForTurntableFarmBody, "wh5");
             JSONObject jsonObject = getIns.getJsonObject(lotteryForTurntableFarm, headerMap);
             if (jsonObject.getInteger("code") == 0) {
                 String type = jsonObject.getString("type");
@@ -201,7 +207,7 @@ public class DailyRedEnvelope extends IJobHandler {
                         .keyMark("adId").valueMark(turntableBrowserAdsItem.getAdId())
                         .keyMark("version").value(4)
                         .keyMark("channel").value(1).buildBody();
-                String waterFriendGotAwardForFarm = getIns.buildUrl("browserForTurntableFarm", browserForTurntableFarmBody, "wh5");
+                String waterFriendGotAwardForFarm = buildUrl("browserForTurntableFarm", browserForTurntableFarmBody, "wh5");
                 JSONObject jsonObject = getIns.getJsonObject(waterFriendGotAwardForFarm, headerMap);
                 if (jsonObject.getInteger("code") == 0) {
                     XxlJobLogger.log("【成功浏览】{}", turntableBrowserAdsItem.getMain());
@@ -212,7 +218,7 @@ public class DailyRedEnvelope extends IJobHandler {
                         .keyMark("adId").valueMark(turntableBrowserAdsItem.getAdId())
                         .keyMark("version").value(4)
                         .keyMark("channel").value(1).buildBody();
-                String waterFriendGotAwardForFarm2 = getIns.buildUrl("browserForTurntableFarm", browserForTurntableFarmBody2, "wh5");
+                String waterFriendGotAwardForFarm2 = buildUrl("browserForTurntableFarm", browserForTurntableFarmBody2, "wh5");
                 JSONObject jsonObject2 = getIns.getJsonObject(waterFriendGotAwardForFarm2, headerMap);
                 if (jsonObject2.getInteger("code") == 0) {
                     XxlJobLogger.log("【成功领取】{}次机会，剩余{}次", jsonObject2.getInteger("addTimes"), jsonObject2.getInteger("totalTimes"));
@@ -226,7 +232,7 @@ public class DailyRedEnvelope extends IJobHandler {
         String timingAwardForTurntableFarmBody = new JDBodyParam()
                 .keyMark("version").value(4)
                 .keyMark("channel").value(1).buildBody();
-        String timingAwardForTurntableFarm = getIns.buildUrl("timingAwardForTurntableFarm", timingAwardForTurntableFarmBody, "wh5");
+        String timingAwardForTurntableFarm = buildUrl("timingAwardForTurntableFarm", timingAwardForTurntableFarmBody, "wh5");
         JSONObject jsonObject = getIns.getJsonObject(timingAwardForTurntableFarm, headerMap);
         if (jsonObject.getInteger("code") == 0 && jsonObject.getInteger("addTimes") == 1) {
             XxlJobLogger.log("【天天抽奖】获得{}次定时奖励，剩余{}次机会", jsonObject.getInteger("addTimes"), jsonObject.getInteger("remainLotteryTimes"));
@@ -237,7 +243,7 @@ public class DailyRedEnvelope extends IJobHandler {
         String initForTurntableFarmBody = new JDBodyParam()
                 .keyMark("version").value(4)
                 .keyMark("channel").value(1).buildBody();
-        String initForTurntableFarmUrl = getIns.buildUrl("initForTurntableFarm", initForTurntableFarmBody, "wh5");
+        String initForTurntableFarmUrl = buildUrl("initForTurntableFarm", initForTurntableFarmBody, "wh5");
 
         JSONObject initForTurntableFarm = getIns.getJsonObject(initForTurntableFarmUrl, headerMap);
         if (initForTurntableFarm.getInteger("code") != 0) {
@@ -273,16 +279,15 @@ public class DailyRedEnvelope extends IJobHandler {
         headerMap.put("Cookie", cookie);
         return headerMap;
     }
+
     // 生成农场header
     public HashMap<String, String> getPublicHeader() {
         HashMap<String, String> fruitMap = new HashMap<>();
         fruitMap.put("Host", "api.m.jd.com");
-        fruitMap.put("sec-fetch-mode", "cors");
         fruitMap.put("origin", "https://carry.m.jd.com");
         fruitMap.put("accept", "*/*");
-        fruitMap.put("sec-fetch-site", "same-site");
-        fruitMap.put("x-request-with", "com.jingdong.app.mall");
-        fruitMap.put("referer", "https://carry.m.jd.com/babelDiy/Zeus/3KSjXqQabiTuD1cJ28QskrpWoBKT/index.html?babelChannel=121&lng=121.463611&lat=31.021696&sid=5ff1f498bb1025bac5c96263ecafc15w&un_area=2_2813_61130_0");
+        fruitMap.put("Connection", "keep-alive");
+        fruitMap.put("referer", "Referer: https://carry.m.jd.com/");
         fruitMap.put("accept-encoding", "gzip, deflate, br");
         fruitMap.put("accept-language", "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7");
         fruitMap.put("cookie", env.getEnvValue());
@@ -290,6 +295,10 @@ public class DailyRedEnvelope extends IJobHandler {
         return fruitMap;
     }
 
+    public String buildUrl(String functionId, String body, String appid) {
+        return String.format("%s?functionId=%s&appid=%s&body=%s",
+                API, functionId, appid, body);
+    }
 
 }
 

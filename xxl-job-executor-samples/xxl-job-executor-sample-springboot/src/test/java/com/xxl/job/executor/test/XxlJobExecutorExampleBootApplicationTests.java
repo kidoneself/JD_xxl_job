@@ -5,10 +5,8 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.xxl.job.executor.core.HeaderUtil;
 import com.xxl.job.executor.core.JDBodyParam;
 import com.xxl.job.executor.core.RequestConstant;
-import com.xxl.job.executor.core.UserAgentUtil;
 import com.xxl.job.executor.po.ShakeList;
 import com.xxl.job.executor.po.TaskItemsItem;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -30,7 +28,6 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -145,10 +142,8 @@ public class XxlJobExecutorExampleBootApplicationTests {
     @Test
     public void aaa() throws InterruptedException {
 
-        Random random = new Random();
-
-
-
+        long v = (long) (Math.floor(Math.random() * (4000 - 3000)) + 1000);
+        System.out.println(v);
 
     }
 }

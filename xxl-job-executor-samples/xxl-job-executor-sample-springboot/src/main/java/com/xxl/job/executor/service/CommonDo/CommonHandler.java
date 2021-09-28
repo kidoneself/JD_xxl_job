@@ -75,7 +75,7 @@ public class CommonHandler {
             XxlJobLogger.log(env.getRemarks() + "的cookie失效，请获取最新的cookie");
             return null;
         }
-        XxlJobLogger.log("*****开始用户【{}】*****", env.getRemarks());
+        XxlJobLogger.log("**********开始用户【{}】**********", env.getRemarks());
         return userInfo;
     }
 

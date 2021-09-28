@@ -6,7 +6,7 @@ public class UserAgentUtil {
 
 
     public static String randomUserAgent() {
-        String jdVersion = "10.1.2";
+        String jdVersion = "9.3.2";
         String osb = String.format("%.0f", Math.random() * (2) + 12);
         String oss = String.format("%.0f", Math.ceil(Math.random() * 4));
         String uuid = getRandomString();
@@ -21,7 +21,7 @@ public class UserAgentUtil {
     }
 
     public static HashMap<String, String> randomUserAgentMsg() {
-        String jdVersion = "10.1.2";
+        String jdVersion = "9.3.2";
         String osb = String.format("%.0f", Math.random() * (2) + 12);
         String oss = String.format("%.0f", Math.ceil(Math.random() * 4));
         String uuid = getRandomString();

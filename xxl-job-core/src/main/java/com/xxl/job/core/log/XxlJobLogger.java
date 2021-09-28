@@ -22,9 +22,7 @@ public class XxlJobLogger {
      * @param appendLog
      */
     private static void logDetail(String appendLog) {
-
         String formatAppendLog = appendLog != null ? appendLog : "";
-
         // appendlog
         String logFileName = XxlJobFileAppender.contextHolder.get();
         if (logFileName != null && logFileName.trim().length() > 0) {
@@ -43,6 +41,7 @@ public class XxlJobLogger {
     public static void log(String appendLogPattern, Object... appendLogArguments) {
         FormattingTuple ft = MessageFormatter.arrayFormat(appendLogPattern, appendLogArguments);
         String appendLog = ft.getMessage();
+        System.out.println(appendLog);
         logDetail(appendLog);
     }
 
