@@ -69,12 +69,12 @@ public class IndexController {
 		if (userName==null || userName.trim().length()==0 || password==null || password.trim().length()==0){
 			return new ReturnT<String>(500, I18nUtil.getString("login_param_empty"));
 		}
-		boolean ifRem = (ifRemember!=null && ifRemember.trim().length()>0 && "on".equals(ifRemember))?true:false;
+		boolean ifRem = ifRemember != null && ifRemember.trim().length() > 0 && "on".equals(ifRemember);
 
 		// do login
 		boolean loginRet = PermissionInterceptor.login(response, userName, password, ifRem);
 		if (!loginRet) {
-			return new ReturnT<String>(500, I18nUtil.getString("login_param_unvalid"));
+			return new ReturnT<>(500, I18nUtil.getString("login_param_unvalid"));
 		}
 		return ReturnT.SUCCESS;
 	}

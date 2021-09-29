@@ -10,10 +10,12 @@ import com.xxl.job.executor.core.JDBodyParam;
 import com.xxl.job.executor.core.UserAgentUtil;
 import com.xxl.job.executor.mapper.EnvMapper;
 import com.xxl.job.executor.po.Env;
+import com.xxl.job.executor.po.JDUser;
 import com.xxl.job.executor.po.dailyRed.DailyRed;
 import com.xxl.job.executor.po.dailyRed.TurntableBrowserAdsItem;
 import com.xxl.job.executor.po.ddFarm.FarmUserPro;
 import com.xxl.job.executor.po.ddFarm.InitFarm;
+import com.xxl.job.executor.service.CommonDo.CommonHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +40,9 @@ public class DailyRedEnvelope extends IJobHandler {
     Env env;
     String ua = UserAgentUtil.randomUserAgent();
     final String API = "https://api.m.jd.com/client.action";
+    @Resource
+    private CommonHandler commonHandler;
+    JDUser userInfo;
 //    String ua = "jdapp;iPhone;9.4.4;14.3;network/4g;Mozilla/5.0 (iPhone; CPU iPhone OS 14_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1";
 
     @Override
@@ -46,11 +51,13 @@ public class DailyRedEnvelope extends IJobHandler {
         List<Env> envs = getUsers();
         this.shareCodes = getShareCode();
         XxlJobLogger.log("【助力码】您提供了{}个", shareCodes.size());
-        XxlJobLogger.log("==========================================================");
+        XxlJobLogger.log("==============【初始化】天天抽奖==============", env.getRemarks());
+
         envs.forEach(env -> {
             this.env = env;
+            userInfo = commonHandler.checkJdUserInfo(env);
+            if (userInfo == null) return;
             try {
-                XxlJobLogger.log("==============【初始化】{}的天天抽奖==============", env.getRemarks());
                 getHelp(envs);
                 DoDailyRedEnvelopeTask(env.getEnvValue());
             } catch (InterruptedException | URISyntaxException e) {

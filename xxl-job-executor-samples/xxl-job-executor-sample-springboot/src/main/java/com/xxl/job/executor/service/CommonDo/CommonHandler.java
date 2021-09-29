@@ -66,7 +66,7 @@ public class CommonHandler {
         JSONObject result = JSONObject.parseObject(response);
         JSONObject data = result.getJSONObject("data");
         if (data.size() == 0) {
-            XxlJobLogger.log("cookie失效，请获取最新的cookie");
+            XxlJobLogger.log(env.getRemarks() +"cookie失效，请获取最新的cookie❌❌❌");
             return null;
         }
         JSONObject o = result.getJSONObject("data").getJSONObject("userInfo").getJSONObject("baseInfo");
