@@ -51,7 +51,7 @@ public class DailyRedEnvelope extends IJobHandler {
         List<Env> envs = getUsers();
         this.shareCodes = getShareCode();
         XxlJobLogger.log("【助力码】您提供了{}个", shareCodes.size());
-        XxlJobLogger.log("==============【初始化】天天抽奖==============", env.getRemarks());
+        XxlJobLogger.log("==============【初始化】天天抽奖==============");
 
         envs.forEach(env -> {
             this.env = env;

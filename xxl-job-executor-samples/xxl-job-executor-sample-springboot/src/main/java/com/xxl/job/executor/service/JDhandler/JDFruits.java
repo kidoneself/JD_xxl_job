@@ -159,15 +159,17 @@ public class JDFruits extends IJobHandler {
         XxlJobLogger.log("-----------------------------------------------------");
         XxlJobLogger.log("|**********************开始预测**********************|");
         XxlJobLogger.log("-----------------------------------------------------");
-        envs.forEach(env -> {
+        for (Env env : envs) {
             this.env = env;
+            JDUser userInfo = commonHandler.checkJdUserInfo(env);
+            if (userInfo == null) continue;
             fruitMap = getPublicHeader();
             try {
                 forecast();
             } catch (URISyntaxException e) {
                 e.printStackTrace();
             }
-        });
+        }
         return SUCCESS;
     }
 
