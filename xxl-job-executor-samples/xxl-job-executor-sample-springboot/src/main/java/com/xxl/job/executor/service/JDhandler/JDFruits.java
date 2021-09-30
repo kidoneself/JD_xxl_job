@@ -576,7 +576,7 @@ public class JDFruits extends IJobHandler {
                 try {
                     int type = 0;
                     JSONObject doTaskObj = doTask(fruitMap, adTask, type);
-                    if (doTaskObj.get("code") != "0") {
+                    if (doTaskObj.getInteger("code") == 0) {
                         type = 1;
                         JSONObject getTaskRewardResObj = doTask(fruitMap, adTask, type);
                         XxlJobLogger.log("【{}】获取到：{}g💧", adTask.getMainTitle(), getTaskRewardResObj.get("amount"));

@@ -12,6 +12,7 @@ import com.xxl.job.core.enums.ExecutorBlockStrategyEnum;
 import com.xxl.job.core.glue.GlueTypeEnum;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -26,6 +27,7 @@ import java.util.Map;
  */
 @Controller
 @RequestMapping("/jobinfo")
+@CrossOrigin
 public class JobInfoController {
 
 	@Resource
@@ -48,7 +50,8 @@ public class JobInfoController {
 
 		return "jobinfo/jobinfo.index";
 	}
-	
+
+
 	@RequestMapping("/pageList")
 	@ResponseBody
 	public Map<String, Object> pageList(@RequestParam(required = false, defaultValue = "0") int start,  
