@@ -131,32 +131,37 @@ public class JDBeans extends IJobHandler {
         XxlJobLogger.log("开始做任务~~~");
         getBeanTaskList();
         if (beanTaskList == null) return;
-        //领取首页进领京豆任务
-        if (beanTaskList.getData().getViewAppHome() != null && !beanTaskList.getData().getViewAppHome().isDoneTask()) {
-            String beanHomeIconDoTask_body = new JDBodyParam().keyMark("flag").valueMark(0).keyMark("viewChannel").valueMark("AppHome").buildBody();
-            String beanHomeIconDoTask_url = buildTaskUrl("beanHomeIconDoTask", beanHomeIconDoTask_body);
-            JSONObject beanHomeIconDoTask_jsonObject = getIns.getJsonObject(beanHomeIconDoTask_url, headerMap);
-            if (beanHomeIconDoTask_jsonObject.getInteger("code") != 0) {
-                XxlJobLogger.log("❌{},失败，失败原因：{}", beanTaskList.getData().getViewAppHome().getMainTitle(), beanHomeIconDoTask_jsonObject.getJSONObject("data"));
-            }
-            XxlJobLogger.log("【{}】领取成功", beanTaskList.getData().getViewAppHome().getMainTitle());
-            String do_beanHomeIconDoTask_body = new JDBodyParam().keyMark("flag").valueMark(1).keyMark("viewChannel").valueMark("AppHome").buildBody();
-            String do_beanHomeIconDoTask_url = buildTaskUrl("beanHomeIconDoTask", do_beanHomeIconDoTask_body);
-            System.out.println(getRndInteger(2500, 3500));
-            Thread.sleep(getRndInteger(2500, 3500));
-            JSONObject do_beanHomeIconDoTask_jsonObject = getIns.getJsonObject(do_beanHomeIconDoTask_url, headerMap);
-            if (do_beanHomeIconDoTask_jsonObject.getInteger("code") == 0 && do_beanHomeIconDoTask_jsonObject.getJSONObject("data") != null) {
-                JSONObject data = do_beanHomeIconDoTask_jsonObject.getJSONObject("data");
-                XxlJobLogger.log("【{}】{}", beanTaskList.getData().getViewAppHome().getMainTitle(), data.getString("bizMsg") != null ? data.getString("bizMsg") : data.getString("remindMsg"));
-                if (data.getJSONObject("growthResult") != null && data.getJSONObject("growthResult").getJSONObject("sceneLevelConfig") != null) {
-                    XxlJobLogger.log("【{}】额外获得{}京豆的🎊🎊", beanTaskList.getData().getViewAppHome().getMainTitle(), data.getJSONObject("growthResult").getJSONObject("sceneLevelConfig").getInteger("beanNum"));
+        if (beanTaskList.getData().getViewAppHome() == null) {
+            XxlJobLogger.log("未领取到首页任务");
+        } else {
+            //领取首页进领京豆任务
+            if (!beanTaskList.getData().getViewAppHome().isDoneTask()) {
+                String beanHomeIconDoTask_body = new JDBodyParam().keyMark("flag").valueMark(0).keyMark("viewChannel").valueMark("AppHome").buildBody();
+                String beanHomeIconDoTask_url = buildTaskUrl("beanHomeIconDoTask", beanHomeIconDoTask_body);
+                JSONObject beanHomeIconDoTask_jsonObject = getIns.getJsonObject(beanHomeIconDoTask_url, headerMap);
+                if (beanHomeIconDoTask_jsonObject.getInteger("code") != 0) {
+                    XxlJobLogger.log("❌{},失败，失败原因：{}", beanTaskList.getData().getViewAppHome().getMainTitle(), beanHomeIconDoTask_jsonObject.getJSONObject("data"));
+                }
+                XxlJobLogger.log("【{}】领取成功", beanTaskList.getData().getViewAppHome().getMainTitle());
+                String do_beanHomeIconDoTask_body = new JDBodyParam().keyMark("flag").valueMark(1).keyMark("viewChannel").valueMark("AppHome").buildBody();
+                String do_beanHomeIconDoTask_url = buildTaskUrl("beanHomeIconDoTask", do_beanHomeIconDoTask_body);
+                System.out.println(getRndInteger(2500, 3500));
+                Thread.sleep(getRndInteger(2500, 3500));
+                JSONObject do_beanHomeIconDoTask_jsonObject = getIns.getJsonObject(do_beanHomeIconDoTask_url, headerMap);
+                if (do_beanHomeIconDoTask_jsonObject.getInteger("code") == 0 && do_beanHomeIconDoTask_jsonObject.getJSONObject("data") != null) {
+                    JSONObject data = do_beanHomeIconDoTask_jsonObject.getJSONObject("data");
+                    XxlJobLogger.log("【{}】{}", beanTaskList.getData().getViewAppHome().getMainTitle(), data.getString("bizMsg") != null ? data.getString("bizMsg") : data.getString("remindMsg"));
+                    if (data.getJSONObject("growthResult") != null && data.getJSONObject("growthResult").getJSONObject("sceneLevelConfig") != null) {
+                        XxlJobLogger.log("【{}】额外获得{}京豆的🎊🎊", beanTaskList.getData().getViewAppHome().getMainTitle(), data.getJSONObject("growthResult").getJSONObject("sceneLevelConfig").getInteger("beanNum"));
+                    }
+                } else {
+                    XxlJobLogger.log("errorMessage -> 点太快啦\n{}", do_beanHomeIconDoTask_jsonObject.getJSONObject("data"));
                 }
             } else {
-                XxlJobLogger.log("errorMessage -> 点太快啦\n{}", do_beanHomeIconDoTask_jsonObject.getJSONObject("data"));
+                XxlJobLogger.log("任务{}:已经完成了", beanTaskList.getData().getViewAppHome().getMainTitle());
             }
-        } else {
-            XxlJobLogger.log("任务{}:已经完成了", beanTaskList.getData().getViewAppHome().getMainTitle());
         }
+
     }
 
     private void getBeanTaskList() {
