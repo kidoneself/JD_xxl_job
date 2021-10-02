@@ -76,6 +76,7 @@ public class IndexController {
         if (!loginRet) {
             return new ReturnT<>(500, I18nUtil.getString("login_param_unvalid"));
         }
+
 //		return ReturnT.SUCCESS;
         return new ReturnT<>(200, "asdadsasdad");
     }
@@ -90,6 +91,10 @@ public class IndexController {
         stringStringHashMap.put("token", UUID.randomUUID().toString());
         return stringStringHashMap;
     }
+
+        return ReturnT.SUCCESS;
+    }
+
 
 
     @RequestMapping(value = "logout", method = RequestMethod.POST)
