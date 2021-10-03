@@ -1,12 +1,14 @@
 package com.xxl.job.executor.service.JDhandler;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Multimap;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.JobHandler;
 import com.xxl.job.core.log.XxlJobLogger;
 import com.xxl.job.executor.core.GetMethodIns;
 import com.xxl.job.executor.core.JDBodyParam;
+import com.xxl.job.executor.core.JSONTree;
 import com.xxl.job.executor.core.UserAgentUtil;
 import com.xxl.job.executor.po.Env;
 import com.xxl.job.executor.po.JDUser;
@@ -17,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -99,7 +103,6 @@ public class JDBeans extends IJobHandler {
             }
             int times = 0;
             do {
-                System.out.println("++++++++++++++++++++");
                 getBeanTaskList();
                 if (beanTaskList == null) return;
                 List<TaskInfosItem> taskInfosNew = beanTaskList.getData().getTaskInfos();
@@ -108,25 +111,27 @@ public class JDBeans extends IJobHandler {
                 if (taskInfo.getStatus() == 2) {
                     continue;
                 }
-                // 跳转任务
+                // 跳转任务  89是一个任务需要执行多次
                 if (taskInfo.getTaskType() == 9 || taskInfo.getTaskType() == 8) {
                     String taskInfo_body = new JDBodyParam()
                             .keyMark("actionType").value(1)
                             .keyMark("taskToken").valueMark(taskInfo.getSubTaskVOS().get(0).getTaskToken()).buildBody();
                     String taskInfo_url = buildTaskUrl("beanDoTask", taskInfo_body);
                     JSONObject taskInfo_jsonObject = getIns.getJsonObject(taskInfo_url, headerMap);
+                    Multimap<String, Object> dataMap = JSONTree.jsonToMap(taskInfo_jsonObject);
                     Integer waitDuration = taskInfo.getWaitDuration();
+                    //waitDuration 等待时间
+//                    int bizMsg = Arrays.asList(dataMap.get("bizMsg").toArray()).size()>0;
                     if (waitDuration != null && waitDuration != 0) {
                         Integer max = waitDuration * 1000 + 1000;
                         Integer min = waitDuration * 1000 + 2000;
                         Long rndInteger = getRndInteger(min, max);
-                        System.out.println(rndInteger);
                         Thread.sleep(rndInteger);
+                        XxlJobLogger.log("{}：任务领取成功", taskInfo.getTaskName());
                     } else {
-                        System.out.println(getRndInteger(6500, 7000));
+                        XxlJobLogger.log("{}：任务领取失败", taskInfo.getTaskName());
                         Thread.sleep(getRndInteger(6500, 7000));
                     }
-                    System.out.println("跳转任务" + "==" + taskInfo_jsonObject);
                 }
                 // 正常点击任务
                 String taskInfo_body = new JDBodyParam()
@@ -135,9 +140,7 @@ public class JDBeans extends IJobHandler {
                 String taskInfo_url = buildTaskUrl("beanDoTask", taskInfo_body);
                 JSONObject taskInfo_jsonObject = getIns.getJsonObject(taskInfo_url, headerMap);
                 System.out.println("正常点击任务" + "==" + taskInfo_jsonObject);
-                System.out.println(getRndInteger(4000, 5500));
                 Thread.sleep(getRndInteger(4000, 5500));
-                System.out.println(times);
             } while (times < 4);
         }
 
@@ -161,7 +164,6 @@ public class JDBeans extends IJobHandler {
                 XxlJobLogger.log("【{}】领取成功", beanTaskList.getData().getViewAppHome().getMainTitle());
                 String do_beanHomeIconDoTask_body = new JDBodyParam().keyMark("flag").valueMark(1).keyMark("viewChannel").valueMark("AppHome").buildBody();
                 String do_beanHomeIconDoTask_url = buildTaskUrl("beanHomeIconDoTask", do_beanHomeIconDoTask_body);
-                System.out.println(getRndInteger(2500, 3500));
                 Thread.sleep(getRndInteger(2500, 3500));
                 JSONObject do_beanHomeIconDoTask_jsonObject = getIns.getJsonObject(do_beanHomeIconDoTask_url, headerMap);
                 if (do_beanHomeIconDoTask_jsonObject.getInteger("code") == 0 && do_beanHomeIconDoTask_jsonObject.getJSONObject("data") != null) {

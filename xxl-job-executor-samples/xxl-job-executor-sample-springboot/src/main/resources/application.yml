@@ -20,7 +20,7 @@ xxl:
 spring:
   datasource:
 
-    url: jdbc:mysql://192.168.31.37:3306/jd-xxljob?Unicode=true&characterEncoding=UTF-8&useSSL=false
+    url: jdbc:mysql://vpn.kidoneself.com:3306/jd-xxljob?Unicode=true&characterEncoding=UTF-8&useSSL=false
 
     username: root
     password: jd@xxljob

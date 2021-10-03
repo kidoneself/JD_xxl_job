@@ -25,9 +25,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -141,9 +140,55 @@ public class XxlJobExecutorExampleBootApplicationTests {
 
     @Test
     public void aaa() throws InterruptedException {
+        //链式构建请求
 
-        long v = (long) (Math.floor(Math.random() * (4000 - 3000)) + 1000);
-        System.out.println(v);
+//        String result2 = HttpRequest.post("?functionId=getJingBeanBalanceDetail&appid=wh5")
+//                .header(paramMap)//头信息，多个头信息多次调用此方法即可
+//                .cookie("pt_key=AAJhMoazADDzGgTvjoaytT-Ibu0KB4X58qdZwuAZo44PygrREezoKubrGzKMXlm7OS1-VnAbuhM;pt_pin=jd_trbybgrVjMqE;")
+//                .body("{\"pageSize\":\"20\",\"page\":\"2\"}")
+//                .timeout(20000)//超时，毫秒
+//                .execute().body();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("functionId", "getJingBeanBalanceDetail");
+        jsonObject.put("appid", "wh5");
+        JSONObject jsonObject2 = new JSONObject();
+        jsonObject.put("jsonObject2", jsonObject2);
 
+        jsonObject.forEach((s, o) -> {
+            if (o != null) {
+                if (o instanceof JSONObject) {
+                    ((JSONObject) o).forEach((s1, o1) -> System.out.println("---- private " + o1.getClass() + " " + s1 + ";"));
+                }
+                System.out.println("private " + o.getClass() + " " + s + ";");
+            } else {
+                System.out.println("private Object" + " " + s + ";");
+            }
+        });
     }
+
+//    public static Map<String, Object> mapKeyToLower(Object requestMap) {
+//        // 非空校验
+//        requestMap.toString();
+//        if (requestMap.isEmpty()) {
+//            return null;
+//        }
+//        // 初始化放转换后数据的Map
+//        Map<String, Object> responseMap = new HashMap<>(16);
+//        // 使用迭代器进行循环遍历
+//        Set<String> requestSet = requestMap.keySet();
+//        Iterator<String> iterator = requestSet.iterator();
+//        iterator.forEachRemaining(obj -> {
+//            // 判断Key对应的Value是否为Map
+//            if ((requestMap.get(obj) instanceof JSONObject)) {
+//                // 递归调用，将value中的Map的key转小写
+//                responseMap.put(obj.toLowerCase(), mapKeyToLower(requestMap.get(obj)));
+//            } else {
+//                // 直接将key小写放入responseMap
+//                responseMap.put(obj.toLowerCase(), requestMap.get(obj));
+//            }
+//        });
+//
+//        return responseMap;
+//    }
+
 }

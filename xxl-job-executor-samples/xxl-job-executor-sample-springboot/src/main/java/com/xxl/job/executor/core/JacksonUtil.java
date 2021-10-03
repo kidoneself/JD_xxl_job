@@ -39,11 +39,21 @@ public class JacksonUtil {
                 } else {
                     System.out.println("private Object" + " " + s + ";");
                 }
-
             }
         });
+    }
 
-
+    public static void isExit(JSONObject obj) {
+        obj.forEach((s, o) -> {
+            if (o != null) {
+                if (o instanceof JSONObject) {
+                    ((JSONObject) o).forEach((s1, o1) -> System.out.println("---- private " + o1.getClass() + " " + s1 + ";"));
+                }
+                System.out.println("private " + o.getClass() + " " + s + ";");
+            } else {
+                System.out.println("private Object" + " " + s + ";");
+            }
+        });
     }
 
 
