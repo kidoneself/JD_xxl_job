@@ -92,10 +92,6 @@ public class IndexController {
         return stringStringHashMap;
     }
 
-        return ReturnT.SUCCESS;
-    }
-
-
 
     @RequestMapping(value = "logout", method = RequestMethod.POST)
     @ResponseBody

@@ -38,26 +38,40 @@ public class JDBeans extends IJobHandler {
     BeanTaskList beanTaskList;
 
     @Override
-    public ReturnT<String> execute(String param) throws InterruptedException {
-        // 获取所有ck
-        envs = commonHandler.getUsers();
-        XxlJobLogger.log("【领京豆】任务开始执行啦φ(*￣0￣)");
-        for (Env env : envs) {
-            this.env = env;
-            getHeader();
-            userInfo = commonHandler.checkJdUserInfo(env);
-            if (userInfo == null) break;
-            // 签到领取京豆
-            signForBean();
-            // 首页进任务
+    public ReturnT<String> execute(String param) {
+        try {
 
-            doViewAppHome();
-            // 其他任务
-            doOtherTask();
-            // 打印用户等级
-            printInfo();
-            // ==========================================================摇红包==========================================================
+            // 获取所有ck
+            envs = commonHandler.getUsers();
+            XxlJobLogger.log("【领京豆】任务开始执行啦φ(*￣0￣)");
+            for (Env env : envs) {
+                this.env = env;
+                getHeader();
+                userInfo = commonHandler.checkJdUserInfo(env);
+                if (userInfo == null) continue;
+
+
+                //早起福利
+
+                // 签到领取京豆
+                signForBean();
+                // 首页进任务
+                doViewAppHome();
+                // 其他任务
+                doOtherTask();
+                // 打印用户等级
+                printInfo();
+                // ==========================================================摇红包==========================================================
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            if (e instanceof InterruptedException) {
+                System.err.println("===========================");
+            }
+
         }
+
         return SUCCESS;
     }
 
@@ -77,7 +91,7 @@ public class JDBeans extends IJobHandler {
         for (int i = 0; i < taskInfos.size(); i++) {
             taskInfo = taskInfos.get(i);
             if (taskInfo.getStatus() == 2) {
-                XxlJobLogger.log("任务{}:已完成", taskInfo.getTaskName());
+                XxlJobLogger.log("任务{}:今日已经完成了", taskInfo.getTaskName());
                 continue;
             } else if (taskInfo.getStatus() != 1) {
                 XxlJobLogger.log("任务{}:未能完成", taskInfo.getTaskName());
@@ -85,10 +99,12 @@ public class JDBeans extends IJobHandler {
             }
             int times = 0;
             do {
+                System.out.println("++++++++++++++++++++");
                 getBeanTaskList();
                 if (beanTaskList == null) return;
                 List<TaskInfosItem> taskInfosNew = beanTaskList.getData().getTaskInfos();
                 taskInfo = taskInfosNew.get(i);
+                times++;
                 if (taskInfo.getStatus() == 2) {
                     continue;
                 }
@@ -121,7 +137,7 @@ public class JDBeans extends IJobHandler {
                 System.out.println("正常点击任务" + "==" + taskInfo_jsonObject);
                 System.out.println(getRndInteger(4000, 5500));
                 Thread.sleep(getRndInteger(4000, 5500));
-                times++;
+                System.out.println(times);
             } while (times < 4);
         }
 
