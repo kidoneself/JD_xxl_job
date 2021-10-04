@@ -1,10 +1,14 @@
 package com.xxl.job.executor.test;
 
+import cn.hutool.crypto.SecureUtil;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson.JSONObject;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.xxl.job.executor.core.HeaderUtil;
 import com.xxl.job.executor.core.JDBodyParam;
 import com.xxl.job.executor.core.RequestConstant;
+import com.xxl.job.executor.core.UserAgentUtil;
 import com.xxl.job.executor.po.ShakeList;
 import com.xxl.job.executor.po.TaskItemsItem;
 import org.apache.http.Header;
@@ -25,8 +29,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -140,55 +145,32 @@ public class XxlJobExecutorExampleBootApplicationTests {
 
     @Test
     public void aaa() throws InterruptedException {
-        //链式构建请求
+        long lkt = System.currentTimeMillis();
+        String lks = SecureUtil.md5("'JL1VTNRadM68cIMQ'" + lkt);
+        HashMap<String, String> header = new HashMap<>();
+        header.put("Host", "sendbeans.jd.com");
+        header.put("Origin", "https://sendbeans.jd.com");
+        header.put("Cookie", "pt_key=AAJhRyK1ADCfaMLMkUA96laOm1_845DZqAuxdaP7mSbEeNfmuQoM2kItc-La3dm18Mb9e37nJ1w;pt_pin=wdlLxrYZBojiba;");
+        header.put("Connection", "keep-alive");
+        header.put("Accept", "application/json, text/plain, */*");
+        header.put("User-Agent", "");
+        header.put("Accept-Language", "zh-cn");
+        header.put("Referer", "https://sendbeans.jd.com/dist/index.html");
+        header.put("Accept-Encoding", "gzip, deflate, br");
+        header.put("openId", "");
+        header.put("lkt", Long.toString(lkt));
+        header.put("lks", lks);
+        header.put("User-agent", UserAgentUtil.randomUserAgent());
 
-//        String result2 = HttpRequest.post("?functionId=getJingBeanBalanceDetail&appid=wh5")
-//                .header(paramMap)//头信息，多个头信息多次调用此方法即可
-//                .cookie("pt_key=AAJhMoazADDzGgTvjoaytT-Ibu0KB4X58qdZwuAZo44PygrREezoKubrGzKMXlm7OS1-VnAbuhM;pt_pin=jd_trbybgrVjMqE;")
-//                .body("{\"pageSize\":\"20\",\"page\":\"2\"}")
-//                .timeout(20000)//超时，毫秒
-//                .execute().body();
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("functionId", "getJingBeanBalanceDetail");
-        jsonObject.put("appid", "wh5");
-        JSONObject jsonObject2 = new JSONObject();
-        jsonObject.put("jsonObject2", jsonObject2);
+        String url = "https://sendbeans.jd.com/common/api/bean/activity/get/entry/list/by/channel?channelId=14&channelType=H5&sendType=0&singleActivity=false&invokeKey=JL1VTNRadM68cIMQ";
+        HttpResponse execute = HttpRequest.get(url).headerMap(header, false).execute();
 
-        jsonObject.forEach((s, o) -> {
-            if (o != null) {
-                if (o instanceof JSONObject) {
-                    ((JSONObject) o).forEach((s1, o1) -> System.out.println("---- private " + o1.getClass() + " " + s1 + ";"));
-                }
-                System.out.println("private " + o.getClass() + " " + s + ";");
-            } else {
-                System.out.println("private Object" + " " + s + ";");
-            }
-        });
+
+        String url2 = "https://sendbeans.jd.com/common/api/bean/activity/get/entry/list/by/channel?channelId=14&channelType=H5&sendType=0&singleActivity=false&invokeKey=JL1VTNRadM68cIMQ";
+        HttpResponse execute2 = HttpRequest.get(url).headerMap(header, true).execute();
+
+
+        System.out.println(execute);
+
     }
-
-//    public static Map<String, Object> mapKeyToLower(Object requestMap) {
-//        // 非空校验
-//        requestMap.toString();
-//        if (requestMap.isEmpty()) {
-//            return null;
-//        }
-//        // 初始化放转换后数据的Map
-//        Map<String, Object> responseMap = new HashMap<>(16);
-//        // 使用迭代器进行循环遍历
-//        Set<String> requestSet = requestMap.keySet();
-//        Iterator<String> iterator = requestSet.iterator();
-//        iterator.forEachRemaining(obj -> {
-//            // 判断Key对应的Value是否为Map
-//            if ((requestMap.get(obj) instanceof JSONObject)) {
-//                // 递归调用，将value中的Map的key转小写
-//                responseMap.put(obj.toLowerCase(), mapKeyToLower(requestMap.get(obj)));
-//            } else {
-//                // 直接将key小写放入responseMap
-//                responseMap.put(obj.toLowerCase(), requestMap.get(obj));
-//            }
-//        });
-//
-//        return responseMap;
-//    }
-
 }
