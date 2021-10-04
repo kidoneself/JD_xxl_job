@@ -49,11 +49,11 @@ public class JDSendBeans extends IJobHandler {
         header.put("Accept-Language", "zh-cn");
         header.put("Referer", "https://sendbeans.jd.com/dist/index.html");
         header.put("Accept-Encoding", "gzip, deflate, br");
-        header.put("openId", "");
+        header.put("openId", " ");
         header.put("lkt", Long.toString(lkt));
         header.put("lks", lks);
         String url = "https://sendbeans.jd.com/common/api/bean/activity/get/entry/list/by/channel?channelId=14&channelType=H5&sendType=0&singleActivity=false&invokeKey=JL1VTNRadM68cIMQ";
-        String body = HttpRequest.post(url).headerMap(header, false).execute().body();
+        String body = HttpRequest.get(url).headerMap(header, false).execute().body();
         System.out.println(body);
         return null;
 

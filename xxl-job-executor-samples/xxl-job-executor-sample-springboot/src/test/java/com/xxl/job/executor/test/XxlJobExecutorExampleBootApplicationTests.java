@@ -5,10 +5,7 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson.JSONObject;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.xxl.job.executor.core.HeaderUtil;
-import com.xxl.job.executor.core.JDBodyParam;
-import com.xxl.job.executor.core.RequestConstant;
-import com.xxl.job.executor.core.UserAgentUtil;
+import com.xxl.job.executor.core.*;
 import com.xxl.job.executor.po.ShakeList;
 import com.xxl.job.executor.po.TaskItemsItem;
 import org.apache.http.Header;
@@ -149,28 +146,19 @@ public class XxlJobExecutorExampleBootApplicationTests {
         String lks = SecureUtil.md5("'JL1VTNRadM68cIMQ'" + lkt);
         HashMap<String, String> header = new HashMap<>();
         header.put("Host", "sendbeans.jd.com");
-        header.put("Origin", "https://sendbeans.jd.com");
+        header.put("Accept", "application/json, text/plain, */*");
+        header.put("lkt", Long.toString(lkt));
+        header.put("lks", lks);
+        header.put("User-agent", "jdapp;android;10.0.2;10;network/wifi;Mozilla/5.0 (Linux; Android 10; MI 8 Build/QKQ1.190828.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/6.2 TBS/045227 Mobile Safari/537.36");
         header.put("Cookie", "pt_key=AAJhRyK1ADCfaMLMkUA96laOm1_845DZqAuxdaP7mSbEeNfmuQoM2kItc-La3dm18Mb9e37nJ1w;pt_pin=wdlLxrYZBojiba;");
         header.put("Connection", "keep-alive");
-        header.put("Accept", "application/json, text/plain, */*");
-        header.put("User-Agent", "");
+        header.put("openId", " ");
         header.put("Accept-Language", "zh-cn");
         header.put("Referer", "https://sendbeans.jd.com/dist/index.html");
         header.put("Accept-Encoding", "gzip, deflate, br");
-        header.put("openId", "");
-        header.put("lkt", Long.toString(lkt));
-        header.put("lks", lks);
-        header.put("User-agent", UserAgentUtil.randomUserAgent());
-
         String url = "https://sendbeans.jd.com/common/api/bean/activity/get/entry/list/by/channel?channelId=14&channelType=H5&sendType=0&singleActivity=false&invokeKey=JL1VTNRadM68cIMQ";
-        HttpResponse execute = HttpRequest.get(url).headerMap(header, false).execute();
-
-
-        String url2 = "https://sendbeans.jd.com/common/api/bean/activity/get/entry/list/by/channel?channelId=14&channelType=H5&sendType=0&singleActivity=false&invokeKey=JL1VTNRadM68cIMQ";
-        HttpResponse execute2 = HttpRequest.get(url).headerMap(header, true).execute();
-
-
-        System.out.println(execute);
+        String body = HttpRequest.get(url).headerMap(header, false).execute().body();
+        System.out.println(body);
 
     }
 }
