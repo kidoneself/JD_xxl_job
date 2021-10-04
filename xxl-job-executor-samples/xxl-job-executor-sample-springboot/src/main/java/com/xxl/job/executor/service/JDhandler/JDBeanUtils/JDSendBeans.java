@@ -1,13 +1,16 @@
 package com.xxl.job.executor.service.JDhandler.JDBeanUtils;
 
 
+
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.http.HttpRequest;
+
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.JobHandler;
 import com.xxl.job.executor.core.GetMethodIns;
 import com.xxl.job.executor.core.UserAgentUtil;
+
 import com.xxl.job.executor.po.Env;
 import com.xxl.job.executor.po.JDUser;
 import com.xxl.job.executor.service.CommonDo.CommonHandler;
