@@ -1,6 +1,10 @@
 package com.xxl.job.core.handler;
 
+import cn.hutool.http.HttpRequest;
+import com.alibaba.fastjson.JSONObject;
 import com.xxl.job.core.biz.model.ReturnT;
+
+import java.util.HashMap;
 
 /**
  * job handler
@@ -33,6 +37,11 @@ public abstract class IJobHandler {
      */
     public abstract ReturnT<String> execute(String param) throws Exception;
 
+    ReturnT<String> execute2(String param) throws Exception {
+
+
+        return null;
+    }
 
     /**
      * init handler, invoked when JobThread init
@@ -45,5 +54,19 @@ public abstract class IJobHandler {
      */
     public abstract void destroy();
 
+    public String httpPost(String url, HashMap<String, String> headers) {
+        return HttpRequest.get(url).addHeaders(headers).execute().body();
+    }
 
+    public JSONObject httpPostJson(String url, HashMap<String, String> headers) {
+        String body = HttpRequest.get(url).addHeaders(headers).execute().body();
+        return JSONObject.parseObject(body);
+    }
+
+    public void proxy() {
+        System.setProperty("http.proxyHost", "192.168.31.115");
+        System.setProperty("https.proxyHost", "192.168.31.115");
+        System.setProperty("http.proxyPort", "8080");
+        System.setProperty("https.proxyPort", "8080");
+    }
 }
