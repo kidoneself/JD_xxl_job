@@ -126,6 +126,7 @@ public class JSONTree {
         }
         return map;
     }
+
     public static Multimap<String, Object> jsonToMap(JSONObject jsonObject) {
         JSONNode root = JSONTree.createJSONTree(jsonObject, "root", "#", 0);
         List<JSONNode> list = JSONTree.depthFirstTraversal(root);
@@ -147,13 +148,12 @@ public class JSONTree {
 
         for (JSONNode jsonNode : list) {
 //            System.out.printf("%" + (jsonNode.getLevel() * 4 + 1) + "s" + "%1$s%2$s%n", " ", jsonNode.getLevel() + "--" + jsonNode.getNodePath());
-            if (jsonNode.getChildren() == null) {
+            if (jsonNode.getChildren() == null && jsonNode.getData() != null) {
                 map.put(jsonNode.getNodeName(), jsonNode.getData());
             }
         }
         return map;
     }
-
 
 
     public static void main(String[] args) {

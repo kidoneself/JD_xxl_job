@@ -45,17 +45,18 @@ public class JDSendBeans extends IJobHandler {
     Boolean rewardOk;
     String inviteUserPin;
     List<SendBeans> helpUsers;
+    List<Env> didHelp = new ArrayList<>(10);
 
     @Override
     public ReturnT<String> execute(String param) throws Exception {
-        proxy();
+//        proxy();
         envs = commonHandler.getUsers();
         XxlJobLogger.log("【送豆得豆】任务开始执行啦φ(*￣0￣)");
         env = envs.get(0);
         getActivityInfo();
         getActivityDetail();
         XxlJobLogger.log("获取到的活动ID：{}，需要邀请{}人瓜分", activityId, completeNumbers);
-        int openCount = (int) Math.floor((envs.size() - 1) / completeNumbers);
+        int openCount = (int) Math.floor((envs.size()) / completeNumbers);
         XxlJobLogger.log("共有{}个账号，前{}个账号可以开团", envs.size(), openCount);
         helpUsers = new ArrayList<>();
         for (int i = 0; i < openCount; i++) {
@@ -69,16 +70,19 @@ public class JDSendBeans extends IJobHandler {
             SendBeans sendBeanUser = SendBeans.builder().username(inviteUserPin).rewardRecordId(rewardRecordId).completed(completed).rewardOk(rewardOk).build();
             helpUsers.add(sendBeanUser);
             if (!bool && rewardRecordId != null) {
-                XxlJobLogger.log("{}已经开过团", env.getRemarks());
+                XxlJobLogger.log("{}已经开过团，瓜分id：{}", env.getRemarks(), rewardRecordId);
                 continue;
             }
             XxlJobLogger.log("{}开团成功，瓜分id：{}", env.getRemarks(), rewardRecordId);
         }
         Thread.sleep(3000);
         for (SendBeans sendBeans : helpUsers) {
+            envs.removeAll(didHelp);
+            didHelp.clear();
             if (sendBeans.getCompleted()) continue;
+            int needHelp = 0;
             for (Env env : envs) {
-                if (sendBeans.getCompleted()) continue;
+                if (needHelp == completeNumbers || sendBeans.getCompleted()) continue;
                 this.env = env;
                 userInfo = commonHandler.checkJdUserInfo(env);
                 if (userInfo == null) continue;
@@ -96,16 +100,19 @@ public class JDSendBeans extends IJobHandler {
                 HashMap<String, Object> result = JSONTree.jsonToHashMap(post);
                 Console.log(post);
                 XxlJobLogger.log("参团结果：{}", result.get("desc"));
-                if (result.get("errorMessage") != null) {
+                if (result.containsKey("errorMessage")) {
                     XxlJobLogger.log((String) result.get("errorMessage"));
                     continue;
                 }
-                if (post.getInteger("result") != null && post.getInteger("result") == 5) {
+                if (post.getInteger("result") == 5) {
                     sendBeans.setCompleted(true);
-                } else if (post.getInteger("result") != null && post.getInteger("result") == 1 || post.getInteger("result") != null && post.getInteger("result") == 0) {
+                } else if (post.getInteger("result") == 1 || post.getInteger("result") == 0) {
                     XxlJobLogger.log((String) result.get("desc"));
                 }
+                needHelp++;
+                didHelp.add(env);
             }
+
         }
         return ReturnT.SUCCESS;
 
