@@ -1,7 +1,6 @@
 package com.xxl.job.executor.service.JDhandler;
 
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Multimap;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.JobHandler;
@@ -19,8 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -33,7 +30,6 @@ public class JDBeans extends IJobHandler {
     @Resource
     private CommonHandler commonHandler;
     GetMethodIns getIns;
-    List<String> paradiseUuids;
     HashMap<String, String> msg = UserAgentUtil.randomUserAgentMsg();
     Env env;
     List<Env> envs;
@@ -118,10 +114,8 @@ public class JDBeans extends IJobHandler {
                             .keyMark("taskToken").valueMark(taskInfo.getSubTaskVOS().get(0).getTaskToken()).buildBody();
                     String taskInfo_url = buildTaskUrl("beanDoTask", taskInfo_body);
                     JSONObject taskInfo_jsonObject = getIns.getJsonObject(taskInfo_url, headerMap);
-                    Multimap<String, Object> dataMap = JSONTree.jsonToMap(taskInfo_jsonObject);
                     Integer waitDuration = taskInfo.getWaitDuration();
                     //waitDuration 等待时间
-//                    int bizMsg = Arrays.asList(dataMap.get("bizMsg").toArray()).size()>0;
                     if (waitDuration != null && waitDuration != 0) {
                         Integer max = waitDuration * 1000 + 1000;
                         Integer min = waitDuration * 1000 + 2000;
@@ -139,6 +133,8 @@ public class JDBeans extends IJobHandler {
                         .keyMark("taskToken").valueMark(taskInfo.getSubTaskVOS().get(0).getTaskToken()).buildBody();
                 String taskInfo_url = buildTaskUrl("beanDoTask", taskInfo_body);
                 JSONObject taskInfo_jsonObject = getIns.getJsonObject(taskInfo_url, headerMap);
+                HashMap<String, Object> taskInfo_data = JSONTree.jsonToHashMap(taskInfo_jsonObject);
+                XxlJobLogger.log("{}", taskInfo_data.get("bizMsg"));
                 System.out.println("正常点击任务" + "==" + taskInfo_jsonObject);
                 Thread.sleep(getRndInteger(4000, 5500));
             } while (times < 4);
@@ -201,13 +197,17 @@ public class JDBeans extends IJobHandler {
         String signBeanIndex_url = buildSignUrl("signBeanIndex", body);
         JSONObject signBeanIndex = getIns.getJsonObject(signBeanIndex_url, beanMap);
         JSONObject data = signBeanIndex.getJSONObject("data");
+
+        HashMap<String, Object> stringObjectHashMap = JSONTree.jsonToHashMap(data);
+
         if (signBeanIndex.getInteger("code") == 0 && data != null) {
             if (signBeanIndex.getInteger("code") == 0 && signBeanIndex.getJSONObject("data").getInteger("status") == 1) {
-                if (data.containsKey("dailyAward")) {
-                    XxlJobLogger.log("【领京豆签到】[{}]获得{}个京豆", env.getRemarks(), signBeanIndex.getJSONObject("data").getJSONObject("dailyAward").getJSONObject("beanAward").getString("beanCount"));
+                if (stringObjectHashMap.containsKey("dailyAward")) {
+                    XxlJobLogger.log("【领京豆签到】[{}]获得{}个京豆", env.getRemarks(), stringObjectHashMap.get("beanCount"));
                 }
-                if (data.containsKey("continuityAward")) {
-                    XxlJobLogger.log("【领京豆签到】[{}]获得{}个京豆", env.getRemarks(), signBeanIndex.getJSONObject("data").getJSONObject("continuityAward").getJSONObject("dailyAward").getJSONObject("beanAward").getString("beanCount"));
+                if (stringObjectHashMap.containsKey("continuityAward")) {
+
+                    XxlJobLogger.log("【领京豆签到】[{}]获得{}个京豆", env.getRemarks(), stringObjectHashMap.get("beanCount"));
                 }
             } else if (signBeanIndex.getInteger("code") == 0 && signBeanIndex.getJSONObject("data").getInteger("status") == 2) {
                 XxlJobLogger.log("【领京豆签到】[{}]已签过😭", env.getRemarks());

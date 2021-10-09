@@ -246,7 +246,7 @@ public class JDFruits extends IJobHandler {
         Integer newTotalEnergy = initFarm.getFarmUserPro().getTotalEnergy();
         FarmUserPro farmUserPro = initFarm.getFarmUserPro();
         XxlJobLogger.log("***********【{}】***********", env.getRemarks());
-        XxlJobLogger.log("【当前种植】{}次", farmUserPro.getName());
+        XxlJobLogger.log("【当前种植】{}", farmUserPro.getName());
         XxlJobLogger.log("【今日浇水】{}次", waterEveryDayT);
         XxlJobLogger.log("【剩余水滴】{}g\uD83D\uDCA7", newTotalEnergy);
         Integer treeEnergy = initFarm.getFarmUserPro().getTreeEnergy();

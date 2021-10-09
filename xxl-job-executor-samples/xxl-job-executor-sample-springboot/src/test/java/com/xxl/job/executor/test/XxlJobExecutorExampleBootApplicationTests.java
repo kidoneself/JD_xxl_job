@@ -3,6 +3,7 @@ package com.xxl.job.executor.test;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
+import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.xxl.job.executor.core.HeaderUtil;
@@ -144,33 +145,40 @@ public class XxlJobExecutorExampleBootApplicationTests {
 
 
     @Test
-    public void aaa() throws InterruptedException {
+    public void aaa() {
+
+//        String login = "https://wq.jd.com/user_new/info/GetJDUserInfoUnion?sceneval=2";
+//        HashMap<String, String> stringStringHashMap = new HashMap<>();
+//        stringStringHashMap.put("Accept", "*/*");
+//        stringStringHashMap.put("Host", "wq.jd.com");
+//        stringStringHashMap.put("Cookie", "pt_key=AAJhWvJqADAXfG6UICWRLAarp-yEan1m_zMDvle4C4XMGaRY4w0nqFfYPXG0S9vqeLCfJwM4vIs; pt_pin=jd_hzktNtNEmMeI;");
+//        stringStringHashMap.put("User-agent", UserAgentUtil.randomUserAgent());
+//        stringStringHashMap.put("Accept-Language", "zh-cn");
+//        stringStringHashMap.put("Referer", "https://home.m.jd.com/myJd/newhome.action?sceneval=2&ufc=&");
+//        stringStringHashMap.put("Accept-Encoding", "gzip, deflate, br");
+//        String body1 = HttpRequest.get(login).headerMap(stringStringHashMap, false).execute().body();
+        System.setProperty("http.proxyHost", "192.168.31.115");
+        System.setProperty("https.proxyHost", "192.168.31.115");
+        System.setProperty("http.proxyPort", "8080");
+        System.setProperty("https.proxyPort", "8080");
         long lkt = System.currentTimeMillis();
-        String lks = SecureUtil.md5("'JL1VTNRadM68cIMQ'" + lkt);
+        String lks = SecureUtil.md5("JL1VTNRadM68cIMQ" + lkt);
         HashMap<String, String> header = new HashMap<>();
         header.put("Host", "sendbeans.jd.com");
-        header.put("Origin", "https://sendbeans.jd.com");
-        header.put("Cookie", "pt_key=AAJhRyK1ADCfaMLMkUA96laOm1_845DZqAuxdaP7mSbEeNfmuQoM2kItc-La3dm18Mb9e37nJ1w;pt_pin=wdlLxrYZBojiba;");
+        header.put("Cookie", "pt_key=AAJhWvJqADAXfG6UICWRLAarp-yEan1m_zMDvle4C4XMGaRY4w0nqFfYPXG0S9vqeLCfJwM4vIs; pt_pin=jd_hzktNtNEmMeI;");
         header.put("Connection", "keep-alive");
         header.put("Accept", "application/json, text/plain, */*");
-        header.put("User-Agent", "");
-        header.put("Accept-Language", "zh-cn");
         header.put("Referer", "https://sendbeans.jd.com/dist/index.html");
         header.put("Accept-Encoding", "gzip, deflate, br");
         header.put("openId", "");
         header.put("lkt", Long.toString(lkt));
         header.put("lks", lks);
         header.put("User-agent", UserAgentUtil.randomUserAgent());
-
         String url = "https://sendbeans.jd.com/common/api/bean/activity/get/entry/list/by/channel?channelId=14&channelType=H5&sendType=0&singleActivity=false&invokeKey=JL1VTNRadM68cIMQ";
         HttpResponse execute = HttpRequest.get(url).headerMap(header, false).execute();
-
-
-        String url2 = "https://sendbeans.jd.com/common/api/bean/activity/get/entry/list/by/channel?channelId=14&channelType=H5&sendType=0&singleActivity=false&invokeKey=JL1VTNRadM68cIMQ";
-        HttpResponse execute2 = HttpRequest.get(url).headerMap(header, true).execute();
-
-
-        System.out.println(execute);
-
+        String body = execute.body();
+        System.out.println(body);
+        cn.hutool.json.JSONObject jsonObject = JSONUtil.parseObj(body);
+        jsonObject.getStr("data");
     }
 }
