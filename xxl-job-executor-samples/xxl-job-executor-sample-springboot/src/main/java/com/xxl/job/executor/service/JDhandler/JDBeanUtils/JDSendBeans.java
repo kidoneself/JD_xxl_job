@@ -64,7 +64,7 @@ public class JDSendBeans extends IJobHandler {
             userInfo = commonHandler.checkJdUserInfo(env);
             if (userInfo == null) continue;
             Boolean bool = invite();
-            helpUsers = new ArrayList<>();
+
             Thread.sleep(1000);
             getActivityDetail();
             SendBeans sendBeanUser = SendBeans.builder().username(inviteUserPin).rewardRecordId(rewardRecordId).completed(completed).rewardOk(rewardOk).build();
@@ -77,8 +77,8 @@ public class JDSendBeans extends IJobHandler {
         }
         Thread.sleep(3000);
         for (SendBeans sendBeans : helpUsers) {
-            envs.removeAll(didHelp);
-            didHelp.clear();
+//            envs.removeAll(didHelp);
+//            didHelp.clear();
             if (sendBeans.getCompleted()) continue;
             int needHelp = 0;
             for (Env env : envs) {
@@ -104,13 +104,13 @@ public class JDSendBeans extends IJobHandler {
                     XxlJobLogger.log((String) result.get("errorMessage"));
                     continue;
                 }
-                if (post.getInteger("result") == 5) {
+                if (result.get("result") != null && (Integer)result.get("result") == 5) {
                     sendBeans.setCompleted(true);
-                } else if (post.getInteger("result") == 1 || post.getInteger("result") == 0) {
+                } else if ((Integer)result.get("result") == 1 || (Integer)result.get("result") == 0) {
                     XxlJobLogger.log((String) result.get("desc"));
                 }
-                needHelp++;
-                didHelp.add(env);
+//                needHelp++;
+//                didHelp.add(env);
             }
 
         }

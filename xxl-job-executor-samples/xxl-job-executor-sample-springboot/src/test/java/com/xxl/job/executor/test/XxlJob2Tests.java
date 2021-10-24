@@ -2,13 +2,13 @@ package com.xxl.job.executor.test;
 
 import cn.hutool.core.lang.Console;
 import cn.hutool.http.HttpRequest;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.xxl.job.executor.core.HeaderUtil;
 import com.xxl.job.executor.core.JDBodyParam;
 import com.xxl.job.executor.po.ShakeList;
 import com.xxl.job.executor.po.TaskItemsItem;
-import com.xxl.job.executor.po.joy.CrazyJoyUserInfo;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -38,7 +38,7 @@ import java.util.Map;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class XxlJobExecutorExampleBootApplicationTests {
+public class XxlJob2Tests {
 
     @Test
     public void test() throws UnirestException, URISyntaxException {
@@ -256,39 +256,99 @@ public class XxlJobExecutorExampleBootApplicationTests {
     }
 
     @Test
-    public void crazyJoy() {
+    public void crazyJoy() throws InterruptedException {
         // 请求头
-        HashMap<String, String> header = new HashMap<>();
-        String cookie = "pt_key=AAJhaso1ADBvKlGz7jRBQuEE_rXksIqf2w1JW9cXQ4yY_FUhcwXDApdkSMpQrULVoWlnJU3Z0qo;pt_pin=jd_sTaLJiRwioAy;";
-        String[] split = cookie.split(";");
-        BigInteger userHash = userHash(split[1].split("=")[1]);
-        header.put("Accept", "application/json, text/plain, */*");
-        header.put("Accept-Encoding", "gzip, deflate, br");
-        header.put("Accept-language", "en,en-US;q=0.9,zh-CN;q=0.8,zh;q=0.7");
-        header.put("cache-control", "no-cache");
-        header.put("content-type", "application/x-www-form-urlencoded;charset=UTF-8");
-        header.put("origin", "https://crazy-joy.jd.com");
-        header.put("pragma", "no-cache");
-        header.put("referer", "https://crazy-joy.jd.com/");
-        header.put("sec-fetch-dest", "empty");
-        header.put("sec-fetch-mode", "cors");
-        header.put("sec-fetch-site", "same-site");
-        header.put("user-agent", "jdapp;iPhone;9.3.2;15.0;f061695d1c03fef9fdd71adf54dbf28ee19a0d61;network/wifi;supportApplePay/0;hasUPPay/0;hasOCPay/0;model/iPhone8,2;addressid/6484220720;supportBestPay/0;appBuild/167490;pushNoticeIsOpen/0;jdSupportDarkMode/0;pv/11.26;apprpd/JingDou_Detail;ref/JingDou_Detail_Contrller;psq/9;ads/;psn/f061695d1c03fef9fdd71adf54dbf28ee19a0d61|99;jdv/0|direct|-|none|-|1632830119936|1633350768;adk/;app_device/IOS;pap/JA2015_311210|9.3.2|IOS 15.0;Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1");
-        header.put("Cookie", cookie);
+        HashMap<String, String> headerMap = new HashMap<>();
+        String cookie = "pt_key=AAJhcBRFAEC1GZPhe_glM9aFvUXxfdA4YBT92fDfQO-rp79qeSjGc6nDJPvS3_QHJ7G67imhcYO_ERLFMaTGw6NbxLempAhz;pt_pin=%E6%80%AA%E7%9B%97%E5%9F%BA%E5%BE%B78768611;";
+//        String cookie = "pt_key=AAJhRpxBADAG94bqeqBcUBvNcQBBN_MSHD4NVkj8L1MNAbTEUoXZFIsv_a51n0iHNSh8Hu8TTR0;pt_pin=jd_76a0e2fd23b87;";
+//        String cookie = "pt_key=AAJhaP4rADAmnT3ilQLemA8lhDza2Zz2lLZ51hY-6FgH8YeZAQwObIq2393k0JWeCvv9L4jmhPo;pt_pin=jd_64e40afd28100;";
+//        String cookie = "pt_key=AAJhYrKVADA44yyPAW5PePiNxVP7vn6R4hSKcK4t3roTVG2IlSdw7O-uxnyfHNDhLKxyyLxlPB8;pt_pin=jd_PUDaNSWCqtZp;";
+//        String cookie = "pt_key=AAJhWvJqADAXfG6UICWRLAarp-yEan1m_zMDvle4C4XMGaRY4w0nqFfYPXG0S9vqeLCfJwM4vIs; pt_pin=jd_hzktNtNEmMeI;";
+
+        headerMap.put("Host", "api.m.jd.com");
+        headerMap.put("Connection", "keep-alive");
+        headerMap.put("Content-Length", "325");
+        headerMap.put("Cache-Control", "no-cache");
+        headerMap.put("X-Requested-With", "com.jingdong.app.mall");
+        headerMap.put("Sec-Fetch-Site", "same-site");
+        headerMap.put("Origin", "https://wbbny.m.jd.com");
+        headerMap.put("Sec-Fetch-Mode", "cors");
+        headerMap.put("Sec-Fetch-Dest", "empty");
+        headerMap.put("Accept", "application/json, text/plain, */*");
+        headerMap.put("Referer", "https://wbbny.m.jd.com");
+        headerMap.put("Accept-Encoding", "gzip, deflate, br");
+        headerMap.put("User-Agent", "jdapp;android;10.0.8;11;5623365333831666-4653932693569383;network/wifi;model/M2011K2C;addressid/4168482853;aid/e2c538afd59b9e98;oaid/9915dd7d6bf00ab4;osVer/30;appBuild/89053;partner/xiaomi001;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 11; M2011K2C Build/RKQ1.200928.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/6.2 TBS/045713 Mobile Safari/537.36");
+        headerMap.put("Cookie", cookie);
+        headerMap.put("Content-Type", "application/x-www-form-urlencoded");
         // 获取用户joy信息
-        // 获取用户信息 {"paramData":{"inviter":"TgIbftRzDvE3dqENU9J5-sUekYnhBBIg"}}
-        String paramData = new JDBodyParam().keyMark("inviter").valueMark("TgIbftRzDvE3dqENU9J5-sUekYnhBBIg").buildBody();
-        String userInfoBody = new JDBodyParam().keyMark("paramData").valueMark(paramData).buildBody();
-        long t = System.currentTimeMillis();
-        String userInfoUrl = String.format("https://api.m.jd.com/?body=%s&uts=01222367%s%s&appid=crazy_joy&functionId=crazyJoy_user_gameState&t=%s", userInfoBody, userHash, t, t);
-        String res = HttpRequest.get(userInfoUrl).addHeaders(header).execute().body();
-        JSONObject userInfo = JSONObject.parseObject(res);
-        Console.log(userInfo);
-        if (!userInfo.getBoolean("success")) {
-            Console.log(userInfo.getString("officialDocument"));
+        String taskUrl = "https://api.m.jd.com/client.action?functionId=travel_getTaskDetail&body=%7B%7D&client=wh5&clientVersion=1.0.0";
+        String res = HttpRequest.post(taskUrl).addHeaders(headerMap).execute().body();
+        JSONObject taskInfo = JSONObject.parseObject(res);
+        Console.log(taskInfo);
+        if (taskInfo.getInteger("code") != 0) {
+            Console.log(taskInfo.getString("msg"));
         }
-        CrazyJoyUserInfo joyUserInfo = userInfo.getJSONObject("data").toJavaObject(CrazyJoyUserInfo.class);
-        //https://api.m.jd.com/?uts=8311312122041530671634371656251&appid=crazy_joy&functionId=crazyJoy_joy_produce&t=1634371656251
+        JSONObject result = taskInfo.getJSONObject("data").getJSONObject("result");
+        Console.log("互助：" + result.getString("inviteId"));
+        Console.log("支线任务：" + result.getJSONArray("lotteryTaskVos"));
+        Console.log("主任务：" + result.getJSONArray("taskVos"));
+        Console.log("当前金币：" + result.getString("userScore"));
+        JSONArray taskVos = result.getJSONArray("taskVos");
+        //functionId=travel_collectScore&body={"ss":"{\"extraData\":{\"log\":\"-1\",\"sceneid\":\"HYGJZYh5\"},\"secretp\":\"n1Rk4yJykWoaKXpHOor_8CJTFU0UU-Q\",\"random\":\"63813569\"}"
+        String extraData = new JDBodyParam().keyMark("log").valueMark("-1").keyMark("sceneid").valueMark("HYGJZYh5").keyMark("secretp").valueMark("n1Rk4yJykWoaKXpHOor_8CJTFU0UU").keyMark("random").valueMark("63813569").buildBody();
+        String ss = new JDBodyParam().keyMark("ss").valueMark(extraData).keyMark("inviteId").valueMark("ZXASTT026aE3pl7W-IPtd9ZRznPAMfB38OQFjRWn6u7zB55awQ").buildBody();
+        HashMap<String, String> headerMap2 = new HashMap<>();
+
+
+        headerMap.put("Host", "api.m.jd.com");
+        headerMap.put("Connection", "keep-alive");
+        headerMap.put("Content-Length", "325");
+        headerMap.put("Cache-Control", "no-cache");
+        headerMap.put("X-Requested-With", "com.jingdong.app.mall");
+        headerMap.put("Sec-Fetch-Site", "same-site");
+        headerMap.put("Origin", "https://wbbny.m.jd.com");
+        headerMap.put("Sec-Fetch-Mode", "cors");
+        headerMap.put("Sec-Fetch-Dest", "empty");
+        headerMap.put("Accept", "application/json, text/plain, */*");
+        headerMap.put("Referer", "https://wbbny.m.jd.com/babelDiy/Zeus/2vVU4E7JLH9gKYfLQ5EVW6eN2P7B/index.html?babelChannel=jdappsyfc&shareType=taskHelp&inviteId=ZXASTT0205KkcGFRCsSqTXm-p6aJzFjRWn6u7zB55awQ&mpin=RnFnx29cOTXdz9RP--svF3ELW9rRogHyLN0&from=sc&lng=121.425217&lat=31.137725&sid=2a59a2b839c6f6997a174eebfde7474w&un_area=2_2813_61130_0");
+        headerMap.put("Accept-Encoding", "gzip, deflate, br");
+        headerMap.put("User-Agent", "jdapp;android;10.0.8;11;5623365333831666-4653932693569383;network/wifi;model/M2011K2C;addressid/4168482853;aid/e2c538afd59b9e98;oaid/9915dd7d6bf00ab4;osVer/30;appBuild/89053;partner/xiaomi001;eufv/1;jdSupportDarkMode/0;Mozilla/5.0 (Linux; Android 11; M2011K2C Build/RKQ1.200928.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/6.2 TBS/045713 Mobile Safari/537.36");
+        headerMap.put("Cookie", cookie);
+        headerMap.put("Content-Type", "application/x-www-form-urlencoded");
+        String boo = "{\"ss\":\"{\\\"extraData\\\":{\\\"log\\\":\\\"-1\\\",\\\"sceneid\\\":\\\"HYGJZYh5\\\"},\\\"secretp\\\":\\\"n1Rk4yJykWoaKXpHOor_8CJTFU0UU-Q\\\",\\\"random\\\":\\\"63813569\\\"}\",\"inviteId\":\"ZXASTT026aE3pl7W-IPtd9ZRznPAMfB38OQFjRWn6u7zB55awQ\"}";
+        String invite = String.format("https://api.m.jd.com/client.action?functionId=travel_collectScore&body=%s&client=wh5&clientVersion=1.0.0", boo);
+        String inviteres = HttpRequest.post(invite).addHeaders(headerMap2).execute().body();
+        JSONObject inviteInfo = JSONObject.parseObject(inviteres);
+        Console.log(inviteInfo);
+        for (Object taskVo : taskVos) {
+            JSONObject task = (JSONObject) taskVo;
+            Integer maxTimes = task.getInteger("maxTimes");
+            Integer times = task.getInteger("times");
+            if (times <= maxTimes) {
+                Console.log(task.getString("taskFinishedCopy"));
+            }
+            Console.log("开始任务..." + task.getString("subTitleName"));
+            JSONArray browseShopVos = task.getJSONArray("browseShopVo");
+            if (browseShopVos==null) continue;
+
+            for (Object browseShopVo : browseShopVos) {
+                Thread.sleep(80000);
+                JSONObject browseShop = (JSONObject) browseShopVo;
+                String taskToken = browseShop.getString("taskToken");
+                String shopId = browseShop.getString("shopId");
+                //"functionId=followShop&body={"shopId":"10030672","follow":true,"type":"0"}&client=wh5&clientVersion=1.0.0
+                String flowBody = new JDBodyParam().keyMark("shopId").valueMark(shopId).keyMark("follow").value(true).keyMark("type").valueMark(0).buildBody();
+                String taskUrls = String.format("https://api.m.jd.com/client.action?functionId=followShop&body=%s&client=wh5&clientVersion=1.0.0", flowBody);
+                String taskUrlsres = HttpRequest.post(taskUrls).addHeaders(headerMap).execute().body();
+                JSONObject taskUrlsresInfo = JSONObject.parseObject(taskUrlsres);
+                Console.log(taskUrlsresInfo);
+//functionId=travel_collectScore&body={"ss":"{\"extraData\":{\"log\":\"-1\",\"sceneid\":\"HYGJZYh5\"},\"secretp\":\"n1Rk4yJykWoaKXpHOor_8CJTFU0UU-Q\",\"random\":\"63813569\"}"
+// ,"inviteId":"ZXASTT0205KkcGFRCsSqTXm-p6aJzFjRWn6u7zB55awQ"}&client=wh5&clientVersion=1.0.0
+
+
+            }
+
+        }
 
     }
 
