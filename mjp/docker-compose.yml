@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  pyja:
+    restart: always
+    build: # 构建自定义镜像
+      context: .      # 指定dockerfile文件的所在路径
+      dockerfile: Dockerfile   # 指定Dockerfile文件名称
+    image: py/ja:1.0   #指定镜像名和版本
+    container_name: pj  #指定容器名
+    environment:
+      TZ: Asia/Shanghai
+
+    ports:
+      - 8081:8081
+      - 3306:3306
