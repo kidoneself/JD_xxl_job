@@ -6,11 +6,14 @@ services:
     build: # 构建自定义镜像
       context: .      # 指定dockerfile文件的所在路径
       dockerfile: Dockerfile   # 指定Dockerfile文件名称
-    image: py/ja:1.0   #指定镜像名和版本
-    container_name: pj  #指定容器名
+    image: ${IMAGE_NAME}:${ALPINE_VERSION}   #指定镜像名和版本
+    container_name: ${CONTAINER_NAME}  #指定容器名
     environment:
-      TZ: Asia/Shanghai
-
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
     ports:
-      - 8081:8081
-      - 3306:3306
+
+      - "${HOST_ADDRESS1}:3306"
+      - "${HOST_ADDRESS2}:8081"
