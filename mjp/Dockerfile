@@ -1,7 +1,6 @@
 ### 1. Get Linux
 FROM alpine:latest
 WORKDIR /app
-VOLUME /app
 ### 2. Get Java via the package manager
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
 && apk update \
@@ -38,6 +37,6 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 ADD xxl-job-admin-*.jar /admin.jar
 ADD xxl-job-executor-sample*.jar /execute.jar
 
-RUN chmod +x startup.sh
+RUN #chmod +x startup.sh
 ENTRYPOINT ["sh","/startup.sh"]
 
